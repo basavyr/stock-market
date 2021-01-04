@@ -1,5 +1,6 @@
 #! /Users/robertpoenaru/.pyenv/shims/python
 import yfinance as fin
+import matplotlib.pyplot as plt
 
 
 def GetStockPrice(stock):
