@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import yfinance as fin
 import numpy as np
 
+
 def ShowStocks(stock_names, stock_shares, required_shares):
 
     x_ticks = np.arange(len(stock_names))
@@ -36,6 +37,16 @@ def ShowStocks(stock_names, stock_shares, required_shares):
     #     f'Total \n amount={round(sum(current_market_value),3)}', [1, 250])
     # plt.annotate(
     #     f'Required \n amount={round(sum(required_market_value),3)}', [1.2, 150])
+    plt.text(0.25, 0.75, f'Total \n amount={round(sum(current_market_value),3)}', horizontalalignment='center',
+             verticalalignment='center', transform=ax.transAxes, fontsize=8)
+    plt.text(0.25, 0.65, f'Required \n amount={round(sum(required_market_value),3)}', horizontalalignment='center',
+             verticalalignment='center', transform=ax.transAxes, fontsize=8)
+    ax.set_title('Investment portfolio')
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(stock_names)
+    ax.set_ylabel('Amount $')
+    ax.legend(loc='best')
+
     # plt.xticks(x_ticks, stock_names)
     # plt.yticks([0, max(stock_shares)/2, max(stock_shares)])
     # plt.title('Current investment portfolio')
