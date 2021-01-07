@@ -13,6 +13,19 @@ date = lambda: str(datetime.datetime.fromtimestamp(time.time()))[:16]
 
 print(date())
 
+# guide from https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
+
+
+def autolabel(axes, bars):
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for bar in bars:
+        height = bar.get_height()
+        axes.annotate(f'{round(height,2)}',
+                      xy=(bar.get_x() + bar.get_width() / 2, height),
+                      xytext=(0, 3),  # 3 points vertical offset
+                      textcoords="offset points",
+                      ha='center', va='bottom')
+
 
 def ShowStocks(stock_names, stock_shares, required_shares):
 
@@ -41,8 +54,6 @@ def ShowStocks(stock_names, stock_shares, required_shares):
     bar2 = ax.bar(x_ticks + width / 2, required_market_value,
                   width=width, label='required shares')
 
-    fig.tight_layout()
-
     # plt.annotate(
     #     f'Total \n amount={round(sum(current_market_value),3)}', [1, 250])
     # plt.annotate(
@@ -55,13 +66,20 @@ def ShowStocks(stock_names, stock_shares, required_shares):
     ax.set_xticks(x_ticks)
     ax.set_xticklabels(stock_names)
     ax.set_ylabel('Amount $')
+    max_scale_amount = max(max(current_market_value),
+                           max(required_market_value))
+    ax.set_ylim(0, max_scale_amount + 100)
     ax.legend(loc='best')
 
+    autolabel(ax, bar1)
+    autolabel(ax, bar2)
     # plt.xticks(x_ticks, stock_names)
     # plt.yticks([0, max(stock_shares)/2, max(stock_shares)])
     # plt.title('Current investment portfolio')
     # plt.xlabel('Company')
     # plt.ylabel('Total invested \n capital ($)')
+
+    fig.tight_layout()
     plt.savefig('financial.png', dpi=400, bbox_inches='tight')
 
 
