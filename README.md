@@ -12,10 +12,6 @@ As an additional step in the project is the compute the required amount for reac
 
 Graphical representations under the form of *bar-charts* are made using `matplotlib`.
 
-Example with the final result of a plot can be seen in the figure below.
-
-![Stocks](./code/financial.png)
-
 ## Issues
 
 The `xz` package was missing and the execution of a python script that had `yfinance` package couldn't execute properly. Solution was found [here](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple). The `xz` package was installed via Homebrew.
