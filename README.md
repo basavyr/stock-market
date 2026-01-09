@@ -18,8 +18,8 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
 ### Usage
 
 1. **Prepare your Portfolio**: The tool parses a CSV export of your portfolio.
-   - The script skips the first **4 lines** (reserved for metadata/headers).
-   - The **5th line** must be the CSV header with the following fields: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
+   - **Flexible Header Detection**: The script checks the first line for the `Symbol` field. If not found, it automatically skips the first **4 lines** (assuming they contain metadata).
+   - The CSV must contain the following fields: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
    - **Example format (`portfolio.csv`):**
      ```csv
      [Metadata line 1]

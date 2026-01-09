@@ -9,9 +9,16 @@ assert PORTFOLIO_PATH is not None, "PORTFOLIO_PATH environment variable is not s
 
 def get_portfolio():
     with open(PORTFOLIO_PATH, 'r', encoding='utf-8') as reader:
-        data = reader.readlines()
-        portfolio = csv.DictReader(data[4:])
-        return portfolio
+        lines = reader.readlines()
+
+        # Determine if we need to skip the first 4 lines
+        # We assume the header contains 'Symbol'
+        if len(lines) > 4 and 'Symbol' not in lines[0]:
+            portfolio = csv.DictReader(lines[4:])
+        else:
+            portfolio = csv.DictReader(lines)
+
+        return list(portfolio)
 
 
 def get_stock_data(ticker: str):
