@@ -1,17 +1,42 @@
-# Stock Market
+# Stock Market Tools
 
-A python implementation for computing the necessary amount ($) to invest in a specific stock market based on the desired fractional share.
+This repository contains a collection of Python-based tools for stock market analysis and portfolio management.
 
-## Workflow
+## Repository Structure
 
-The goal of the project is to calculate the portfolio value (in USD) based on the invested stocks and their current market price. Available shares are given as input for each company. Using `yfinance` package, one can get the current market price of each company.
+The projects are located in the `projects/` directory:
 
-The companies are given as input strings into an array (e.g., `['MSFT','APPL,'SBUX']`), and using `Ticker` method within the Yahoo financial package, the *highest price of the day* can always be available via the call `float(stock_value.info['regularMarketDayHigh'])`. Conversion to `float` is done for further computations. Using the current market price and the available shares, it is straightforward to compute the total portfolio value.
+- [Stock Picker](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/stock-picker): A tool to calculate the necessary investment amount for reaching desired fractional share goals.
+- [Dividends Builder](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/dividends-builder): A tool to calculate annual dividend revenue based on a stock portfolio.
 
-As an additional step in the project is the compute the required amount for reaching a desired share amount per company. This is based on a constant value `OPTIMAL_SHARE` that represents the total shares desired, and then, by performing a proper computational workflow, the required amount is readily obtained.
+---
 
-Graphical representations under the form of *bar-charts* are made using `matplotlib`.
+## [Dividends Builder](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/dividends-builder)
 
-## Issues
+The Dividends Builder tool helps you track and forecast your annual dividend income.
 
-The `xz` package was missing and the execution of a python script that had `yfinance` package couldn't execute properly. Solution was found [here](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple). The `xz` package was installed via Homebrew.
+### Features
+- Fetches real-time dividend data using `yfinance`.
+- Calculates annual revenue per share and per total holding.
+- Supports CSV-based portfolio imports.
+
+---
+
+## [Stock Picker](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/stock-picker)
+
+The Stock Picker tool computes the investment needed to achieve specific fractional share targets.
+
+### Features
+- Uses `yfinance` to get current market prices (specifically `regularMarketDayHigh`).
+- Calculates the gap between current holdings and an `OPTIMAL_SHARE` target.
+- Generates visual reports using `matplotlib`.
+
+## Setup and Issues
+
+### LZMA/XZ Dependency
+If you encounter issues with `yfinance` or `lzma` imports, you may need to install the `xz` package. On macOS, this can be done via Homebrew:
+
+```bash
+brew install xz
+```
+For more details, see [this StackOverflow discussion](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple).
