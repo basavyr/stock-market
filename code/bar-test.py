@@ -1,5 +1,3 @@
-#! /Users/robertpoenaru/.pyenv/shims/python
-
 import matplotlib.pyplot as plt
 import yfinance as fin
 import numpy as np
@@ -9,7 +7,8 @@ import datetime
 # print(datetime.datetime.fromtimestamp(time.time()))
 
 
-date = lambda: str(datetime.datetime.fromtimestamp(time.time()))[:16]
+def date(): return str(datetime.datetime.fromtimestamp(time.time()))[:16]
+
 
 print(date())
 
@@ -20,7 +19,7 @@ def autolabel(axes, bars):
     """Attach a text label above each bar in *rects*, displaying its height."""
     for bar in bars:
         height = bar.get_height()
-        axes.annotate(f'{round(height,2)}',
+        axes.annotate(f'{round(height, 2)}',
                       xy=(bar.get_x() + bar.get_width() / 2, height),
                       xytext=(0, 3),  # 3 points vertical offset
                       textcoords="offset points",
@@ -58,9 +57,9 @@ def ShowStocks(stock_names, stock_shares, required_shares):
     #     f'Total \n amount={round(sum(current_market_value),3)}', [1, 250])
     # plt.annotate(
     #     f'Required \n amount={round(sum(required_market_value),3)}', [1.2, 150])
-    plt.text(0.25, 0.75, f'Total \n amount={round(sum(current_market_value),3)}', horizontalalignment='center',
+    plt.text(0.25, 0.75, f'Total \n amount={round(sum(current_market_value), 3)}', horizontalalignment='center',
              verticalalignment='center', transform=ax.transAxes, fontsize=8)
-    plt.text(0.25, 0.65, f'Required \n amount={round(sum(required_market_value),3)}', horizontalalignment='center',
+    plt.text(0.25, 0.65, f'Required \n amount={round(sum(required_market_value), 3)}', horizontalalignment='center',
              verticalalignment='center', transform=ax.transAxes, fontsize=8)
     ax.set_title(f'Investment portfolio \n As of: {date()}')
     ax.set_xticks(x_ticks)

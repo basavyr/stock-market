@@ -1,4 +1,3 @@
-#! /Users/robertpoenaru/.pyenv/shims/python
 import yfinance as fin
 import matplotlib.pyplot as plt
 
@@ -41,6 +40,6 @@ print(f'In addition to the current: {current_total_amount}')
 with open("data_stocks.dat", 'w') as out:
     lines = ['Current Portfolio Value\n']
     for stock_name, share, price, available_stock in zip(stocks, required_shares, stocks_prices, shares_available):
-        line = f'Stock: {stock_name} ({available_stock} shares) | Current Capital: {round(available_stock*price,3)} | Required Investment for 3 shares hold: {round(share*price,3)}\n'
+        line = f'Stock: {stock_name} ({available_stock} shares) | Current Capital: {round(available_stock*price, 3)} | Required Investment for 3 shares hold: {round(share*price, 3)}\n'
         lines.append(line)
     out.writelines(lines)
