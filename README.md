@@ -11,14 +11,38 @@ The projects are located in the `projects/` directory:
 
 ---
 
-## [Dividends Builder](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/dividends-builder)
+## [Dividends Builder](projects/dividends-builder)
 
 The Dividends Builder tool helps you track and forecast your annual dividend income.
 
+### Usage
+
+1. **Prepare your Portfolio**: The tool parses a CSV export of your portfolio.
+   - The script skips the first **4 lines** (reserved for metadata/headers).
+   - The **5th line** must be the CSV header with the following fields: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
+   - **Example format (`portfolio.csv`):**
+     ```csv
+     [Metadata line 1]
+     [Metadata line 2]
+     [Metadata line 3]
+     [Metadata line 4]
+     Symbol,Description,ISIN,Quantity,CostBasisPrice,FifoPnlUnrealized
+     AAPL,Apple Inc,US0378331005,15.5,170.25,500.00
+     MSFT,Microsoft Corp,US5949181045,5.0,380.00,200.00
+     ```
+
+2. **Configure and Run**:
+   Set the `PORTFOLIO_PATH` environment variable to your CSV file's location and run the script:
+   ```bash
+   export PORTFOLIO_PATH="path/to/your/portfolio.csv"
+   python projects/dividends-builder/main.py
+   ```
+
 ### Features
 - Fetches real-time dividend data using `yfinance`.
-- Calculates annual revenue per share and per total holding.
-- Supports CSV-based portfolio imports.
+- Correctly handles yield percentages (e.g., 0.4 interpreted as 0.4%).
+- Provides individual stock reports and a total Portfolio Annual Dividend Amount (ADA).
+- Robust error handling for missing symbols or `yfinance` connectivity issues.
 
 ---
 
