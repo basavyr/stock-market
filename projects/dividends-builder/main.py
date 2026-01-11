@@ -1,16 +1,12 @@
 import yfinance as yf
 from tqdm import tqdm
-
 import os
 import csv
 import logging
+import argparse
 
 # Suppress yfinance internal HTTP error logging
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
-
-PORTFOLIO_PATH = os.getenv("PORTFOLIO_PATH", None)
-assert PORTFOLIO_PATH is not None, "PORTFOLIO_PATH environment variable is not set"
-
 
 WISHLIST_PATH = os.path.join(os.path.dirname(__file__), "wishlist.csv")
 
@@ -25,7 +21,12 @@ def get_portfolio():
     Returns:
         list: A list of dictionaries, where each dictionary represents a stock holding.
     """
-    with open(PORTFOLIO_PATH, 'r', encoding='utf-8') as reader:
+    portfolio_path = os.getenv("PORTFOLIO_PATH", None)
+    if portfolio_path is None:
+        print("\nError: PORTFOLIO_PATH environment variable is not set. Portfolio analysis cannot proceed.")
+        return None
+
+    with open(portfolio_path, 'r', encoding='utf-8') as reader:
         lines = reader.readlines()
 
         # Find the index of the header row containing 'Symbol'
@@ -90,7 +91,7 @@ def process_portfolio(portfolio):
     print("\n" + "=" * 40)
     print("      PORTFOLIO ANALYSIS (ADI)")
     print("=" * 40)
-    for stock in tqdm(portfolio, desc="Fetching market data", unit="stock", leave=False):
+    for stock in tqdm(portfolio, desc="Calculating Portfolio Dividends", unit="stock", leave=False):
         ticker = stock['Symbol']
         quantity = float(stock['Quantity'])
 
@@ -136,7 +137,6 @@ def process_wishlist():
     Parses wishlist.csv and calculates required shares and investment to reach 
     target Annual Dividend Income (ADI).
     """
-    assert WISHLIST_PATH is not None, "WISHLIST_PATH environment variable is not set"
     if not os.path.exists(WISHLIST_PATH):
         print(
             f"\nWishlist file not found at {WISHLIST_PATH}. Skipping wishlist analysis.")
@@ -154,7 +154,7 @@ def process_wishlist():
             wishlist.append({'stock': stock, 'target_tda': target_tda})
 
     results = []
-    for item in tqdm(wishlist, desc="Processing targets", unit="stock", leave=False):
+    for item in tqdm(wishlist, desc="Calculating Target Investments", unit="stock", leave=False):
         data = get_stock_data(item['stock'])
         if data is None:
             continue
@@ -208,55 +208,63 @@ def process_wishlist():
 
     print("-" * 110)
     print(
-        f"Total Required Investment to reach ADI goals: {total_investment:,.2f} $")
+        f"Total Required Investment to reach ADI goals ({total_target_adi:,.2f} $): {total_investment:,.2f} $")
     print("-" * 110)
 
 
 def main():
     """
     Main execution flow:
-    1. Loads the portfolio.
-    2. Fetches data for all stocks.
-    3. Prints total ADA for the entire portfolio.
-    4. Filters and prints reports for stocks above the threshold.
-    5. Prints the filtered total ADA.
-    6. Processes and prints wishlist analysis.
+    - Parses command-line arguments to determine which workflow to run.
+    - Honors --portfolio and --wishlist flags. Runs both if no flags are provided.
     """
-    portfolio = get_portfolio()
+    parser = argparse.ArgumentParser(
+        description="Calculate Annual Dividend Income (ADI) for your portfolio and wishlist.")
+    parser.add_argument("--portfolio", action="store_true",
+                        help="Run only the portfolio analysis.")
+    parser.add_argument("--wishlist", action="store_true",
+                        help="Run only the wishlist target planning.")
 
-    # Process the entire portfolio first
-    skip_portfolio = False
-    if not skip_portfolio:
-        all_stocks, total_adi_full = process_portfolio(portfolio)
+    args = parser.parse_args()
 
-        print(
-            f"\nPortfolio Annual Dividend Income (ADI): {total_adi_full: >10.2f} $")
-        print("-" * 90)
+    # If no flags are provided, default to running both
+    run_all = not (args.portfolio or args.wishlist)
 
-        # Default threshold for filtering
-        threshold = 15.0
-        filtered_stocks, total_adi_filtered = filter_portfolio_by_threshold(
-            all_stocks, threshold)
+    if args.portfolio or run_all:
+        portfolio = get_portfolio()
+        if portfolio:
+            all_stocks, total_adi_full = process_portfolio(portfolio)
 
-        print(f"High Earner Report (ADI >= {threshold} USD):\n")
-        print(f"{'#': >3} | {'Stock (Yield)': <16} | {'Quantity': <10} | {'Div/Share': <12} | {'Annual Total': <15}")
-        print("-" * 90)
+            print(
+                f"\nPortfolio Annual Dividend Income (ADI): {total_adi_full: >10.2f} $")
+            print("-" * 90)
 
-        if not filtered_stocks:
-            print("No stocks meet the specified dividend threshold.")
-        else:
-            for idx, stock in enumerate(filtered_stocks):
-                stock_yield_str = f"{stock['ticker']} ({stock['yield']:.2f}%)"
-                print(f"{(idx+1): >2}: | {stock_yield_str: <16} | {stock['quantity']: >10.2f} | "
-                      f"{stock['annual_dividend_per_share']: >9.2f} $/sh | "
-                      f"{stock['annual_revenue']: >12.2f} $")
+            # Default threshold for filtering
+            threshold = 15.0
+            filtered_stocks, total_adi_filtered = filter_portfolio_by_threshold(
+                all_stocks, threshold)
 
-        print("-" * 90)
-        print(f"Total ADI from High Earners: {total_adi_filtered: >41.2f} $")
-        print("-" * 90)
+            print(f"Primary Dividend Sources (ADI >= {threshold} USD):\n")
+            print(
+                f"{'#': >3} | {'Stock (Yield)': <16} | {'Quantity': <10} | {'Div/Share': <17} | {'Annual Total': <15}")
+            print("-" * 90)
 
-    # Wishlist Analysis
-    process_wishlist()
+            if not filtered_stocks:
+                print("No stocks meet the specified dividend threshold.")
+            else:
+                for idx, stock in enumerate(filtered_stocks):
+                    stock_yield_str = f"{stock['ticker']} ({stock['yield']:.2f}%)"
+                    print(f"{(idx+1): >2}: | {stock_yield_str: <16} | {stock['quantity']: >10.2f} | "
+                          f"{stock['annual_dividend_per_share']: >9.2f} $/share | "
+                          f"{stock['annual_revenue']: >12.2f} $")
+
+            print("-" * 90)
+            print(
+                f"Total ADI from Primary Sources: {total_adi_filtered: >41.2f} $")
+            print("-" * 90)
+
+    if args.wishlist or run_all:
+        process_wishlist()
 
 
 if __name__ == "__main__":

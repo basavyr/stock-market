@@ -31,7 +31,7 @@ The reporting module generates a hierarchical summary with distinct sections:
 
 1.  **Portfolio Analysis (ADI)**: A comprehensive overview of current holdings.
     *   Total Portfolio Annual Dividend Income (ADI) display.
-    *   **High Earner Report**: A concise table of assets meeting the threshold, combining Ticker and Yield for clarity.
+    *   **Primary Dividend Sources**: A concise table of assets meeting the threshold, combining Ticker and Yield for clarity.
 2.  **Wishlist Target Planning (ADI)**: A strategic roadmap for future targets.
     *   Target ADI goal for the entire wishlist.
     *   A detailed table showing required shares and total investment (formatted with commas for thousands).

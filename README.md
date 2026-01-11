@@ -32,10 +32,18 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
      ```
 
 2. **Configure and Run**:
-   Set the `PORTFOLIO_PATH` environment variable to your CSV file's location and run the script:
+   You can run the full analysis or target specific workflows using flags:
    ```bash
    export PORTFOLIO_PATH="path/to/your/portfolio.csv"
+   
+   # Run full analysis (Portfolio + Wishlist)
    python projects/dividends-builder/main.py
+   
+   # Run only portfolio analysis
+   python projects/dividends-builder/main.py --portfolio
+   
+   # Run only wishlist target planning
+   python projects/dividends-builder/main.py --wishlist
    ```
 
 ### Wishlist Analysis (Target Planning)
@@ -54,21 +62,23 @@ The tool can also calculate the required investment to reach specific annual div
      ```
 
 2. **View the Roadmap**:
-   When you run the script, it will provide a breakdown of how many shares you need and the total capital required to reach those targets.
+   The script provides a strategic roadmap with required shares and total capital needed.
 
    **Example Output**:
    ```text
-   Wishlist Analysis (Required Investment to reach Target ADI 345.00 $):
+   ========================================
+       WISHLIST TARGET PLANNING (ADI)
+   ========================================
+   Goal: Reach a Total Annual Dividend Income (ADI) of 345.00 $
    --------------------------------------------------------------------------------------------------------------
-     # | Stock (Yield)    | Target ADI | Req. Shares  | Current Price  | Total Cost  
+     # | Stock (Yield)    | Target ADI   | Req. Shares  | Current Price  | Total Cost  
    --------------------------------------------------------------------------------------------------------------
-    1: | AAPL (0.40%)     |    25.00 $ |      24.0385 |       259.37 $ |    6,234.87 $
-    2: | MSFT (0.76%)     |    70.00 $ |      19.2308 |       479.28 $ |    9,216.94 $
-    3: | KO (2.89%)       |   100.00 $ |      49.0196 |        70.51 $ |    3,456.37 $
-    4: | TSM (1.04%)      |    50.00 $ |      14.8368 |       323.63 $ |    4,801.63 $
-    5: | SBUX (2.79%)     |   100.00 $ |      40.3226 |        88.88 $ |    3,583.87 $
+    1: | AAPL (0.40%)     |      25.00 $ |      24.0385 |       259.37 $ |    6,234.87 $
+    2: | MSFT (0.76%)     |      70.00 $ |      19.2308 |       479.28 $ |    9,216.94 $
+    3: | KO (2.89%)       |     100.00 $ |      49.0196 |        70.51 $ |    3,456.37 $
+    4: | TSM (1.04%)      |      50.00 $ |      14.8368 |       323.63 $ |    4,801.63 $
    --------------------------------------------------------------------------------------------------------------
-   Total Required Investment to reach ADI goals: 27,293.68 $
+   Total Required Investment to reach ADI goals (345.00 $): 27,293.68 $
    --------------------------------------------------------------------------------------------------------------
    ```
 
@@ -76,7 +86,8 @@ The tool can also calculate the required investment to reach specific annual div
 - Fetches real-time dividend data using `yfinance`.
 - Correctly handles yield percentages (e.g., 0.4 interpreted as 0.4%).
 - Provides individual stock reports and a total portfolio **Annual Dividend Income (ADI)**.
-- **Target Planning**: Calculate required capital and shares to reach ADI goals.
+- **Target Planning**: Calculate required capital and shares to reach ADI goals using a "blueprint" approach.
+- **Flexible Execution**: Use CLI flags to run specific parts of the analysis independently.
 - Robust error handling for missing symbols or `yfinance` connectivity issues.
 
 ---
