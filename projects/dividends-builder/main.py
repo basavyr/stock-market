@@ -152,9 +152,9 @@ def process_wishlist(holdings=None):
         for row in data:
             stock = row['STOCK'].strip()
             # Remove any non-numeric characters like trailing dots
-            target_tda_str = row['TARGET_TDA'].strip().rstrip('.')
-            target_tda = float(target_tda_str)
-            wishlist.append({'stock': stock, 'target_tda': target_tda})
+            target_adi_str = row['TARGET_ADI'].strip().rstrip('.')
+            target_adi = float(target_adi_str)
+            wishlist.append({'stock': stock, 'target_adi': target_adi})
 
     results = []
     for item in tqdm(wishlist, desc="Calculating Target Investments", unit="stock", leave=False):
@@ -166,7 +166,7 @@ def process_wishlist(holdings=None):
         div_yield, div_per_share, current_price = data
 
         current_quantity = holdings.get(ticker, 0.0) if holdings else 0.0
-        target_adi = item['target_tda']
+        target_adi = item['target_adi']
 
         if div_per_share == 0:
             # Cannot reach target ADI if the stock pays no dividends
@@ -181,7 +181,7 @@ def process_wishlist(holdings=None):
 
         results.append({
             'stock': ticker,
-            'target_tda': target_adi,
+            'target_adi': target_adi,
             'owned_shares': current_quantity,
             'delta_shares': delta_shares,
             'required_buy': required_to_buy,
@@ -192,7 +192,7 @@ def process_wishlist(holdings=None):
         })
 
     # Calculate total target Annual Dividend Income (ADI)
-    total_target_adi = sum(row['target_tda'] for row in results)
+    total_target_adi = sum(row['target_adi'] for row in results)
 
     analysis_title = "WISHLIST GAP ANALYSIS (ADI)" if holdings else "WISHLIST TARGET PLANNING (ADI)"
 
@@ -216,7 +216,7 @@ def process_wishlist(holdings=None):
         stock_yield_str = f"{marker} {row['stock']} ({row['yield']:.2f}%)"
 
         print(
-            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_tda']: >10.2f} $ | {row['owned_shares']: >10.2f} | {delta_str} | {row['current_price']: >8.2f} $ | {cost_str}")
+            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_adi']: >10.2f} $ | {row['owned_shares']: >10.2f} | {delta_str} | {row['current_price']: >8.2f} $ | {cost_str}")
     # Calculate total required investment
     total_investment = sum(row['total_cost']
                            for row in results if row['total_cost'] != float('inf'))

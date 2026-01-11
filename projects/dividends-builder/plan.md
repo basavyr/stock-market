@@ -1,7 +1,7 @@
 # Research and Implementation Plan: Portfolio Dividend Revenue Analysis
 
 ## I. Project Overview
-The primary objective of this project is to develop a standardized framework for the automated calculation and reporting of annual dividend revenue (ADA) for diversified equity portfolios. By integrating real-time market data with local portfolio records, the system provides accurate forecasting of passive income streams.
+The primary objective of this project is to develop a standardized framework for the automated calculation and reporting of annual dividend income (ADI) for diversified equity portfolios. By integrating real-time market data with local portfolio records, the system provides accurate forecasting of passive income streams.
 
 ## II. Data Acquisition and Preprocessing Protocol
 The system utilizes a hybrid data acquisition strategy, combining local CSV parsing with real-time API integration:

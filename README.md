@@ -13,7 +13,7 @@ The projects are located in the `projects/` directory:
 
 ## [Dividends Builder](projects/dividends-builder)
 
-The Dividends Builder tool helps you track and forecast your annual dividend income.
+The Dividends Builder tool helps you track and forecast your annual dividend income (ADI).
 
 ### Usage
 
@@ -50,10 +50,10 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
 The tool can also calculate the required investment to reach specific annual dividend goals using a `wishlist.csv` file.
 
 1. **Create `projects/dividends-builder/wishlist.csv`**:
-   - **Format**: `STOCK, TARGET_TDA`
+   - **Format**: `STOCK, TARGET_ADI`
    - **Example**:
      ```csv
-     STOCK, TARGET_TDA
+     STOCK, TARGET_ADI
      AAPL, 25
      MSFT, 70
      KO, 100
