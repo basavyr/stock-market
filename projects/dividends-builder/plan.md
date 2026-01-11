@@ -6,9 +6,9 @@ The primary objective of this project is to develop a standardized framework for
 ## II. Data Acquisition and Preprocessing Protocol
 The system utilizes a hybrid data acquisition strategy, combining local CSV parsing with real-time API integration:
 
-*   **Ingestion**: Portfolio data is sourced from standardized CSV exports, optimized for **IBKR Flex Queries**.
-*   **Dynamic Header Detection**: To accommodate varying export formats, the system dynamically scans for the row containing the `Symbol` field. This allows it to bypass an arbitrary number of metadata or cash balance lines.
-*   **Field Mapping**: Required attributes include `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, and `FifoPnlUnrealized`.
+*   **Ingestion**: Portfolio data is sourced from standardized CSV exports. The system supports multiple brokers through dedicated parsers, selectable via CLI flags (e.g., `--ibkr`, `--xtb`, `--tradeville`).
+*   **Dynamic Header Detection (IBKR)**: To accommodate varying export formats, the IBKR parser dynamically scans for the row containing the `Symbol` field. This allows it to bypass an arbitrary number of metadata or cash balance lines.
+*   **Field Mapping**: Required attributes include `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, and `FifoPnlUnrealized`. (Note: Field names may vary by broker source).
 *   **Real-time Integration**: The `yfinance` library is employed to fetch live market data. To ensure a clean terminal interface, internal HTTP exception logging is suppressed for non-critical errors.
 *   **Progress Tracking**: Computational progress is monitored via the `tqdm` library, providing visual feedback during high-latency data retrieval operations.
 

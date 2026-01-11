@@ -10,17 +10,36 @@ logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 WISHLIST_PATH = os.path.join(os.path.dirname(__file__), "wishlist.csv")
 
+# Supported portfolio data sources and their implementation status
+SUPPORTED_SOURCES = {
+    "ibkr": "Interactive Brokers (Implemented)",
+    "xtb": "XTB (Planned)",
+    "tradeville": "Tradeville (Planned)",
+    "auto": "Automatic Detection (Planned)"
+}
 
-def get_portfolio():
+
+def get_portfolio(source="ibkr"):
     """
     Parses the portfolio CSV file and returns a list of stock holdings.
 
-    The function dynamically detects the header row by searching for the "Symbol"
-    field, allowing it to handle variable metadata lines (e.g., from IBKR Flex Queries).
+    Supports multiple data sources (currently only IBKR is implemented).
+    The IBKR parser dynamically detects the header row by searching for the "Symbol"
+    field, allowing it to handle variable metadata lines.
+
+    Args:
+        source (str): The data source type ('ibkr', 'xtb', 'tradeville').
 
     Returns:
         list: A list of dictionaries, where each dictionary represents a stock holding.
     """
+    if source not in SUPPORTED_SOURCES:
+        raise ValueError(f"Unknown data source: '{source}'.")
+
+    if source != "ibkr":
+        raise NotImplementedError(
+            f"Parsing for '{source}' ({SUPPORTED_SOURCES[source]}) data is not implemented yet.")
+
     portfolio_path = os.getenv("PORTFOLIO_PATH", None)
     if portfolio_path is None:
         print("\nError: PORTFOLIO_PATH environment variable is not set. Portfolio analysis cannot proceed.")
@@ -75,12 +94,13 @@ def get_stock_data(ticker: str):
         return None
 
 
-def process_portfolio(portfolio):
+def process_portfolio(portfolio, source="IBKR"):
     """
     Fetches dividend data for all stocks in the portfolio.
 
     Args:
         portfolio (list): A list of dictionaries representing stock holdings.
+        source (str): Human-readable name of the portfolio source for display.
 
     Returns:
         tuple: (all_stock_data, total_adi_full) where all_stock_data is a list of
@@ -88,9 +108,9 @@ def process_portfolio(portfolio):
     """
     all_stock_data = []
     total_adi_full = 0
-    print("\n" + "=" * 40)
-    print("      PORTFOLIO ANALYSIS (ADI)")
-    print("=" * 40)
+    print("\n" + "=" * 50)
+    print(f"      {source.upper()} PORTFOLIO ANALYSIS (ADI)")
+    print("=" * 50)
     for stock in tqdm(portfolio, desc="Calculating Portfolio Dividends", unit="stock", leave=False):
         ticker = stock['Symbol']
         quantity = float(stock['Quantity'])
@@ -201,33 +221,36 @@ def process_wishlist(holdings=None):
     print("=" * 40)
     print(
         f"Goal: Reach a Total Annual Dividend Income (ADI) of {total_target_adi:,.2f} $")
-    print("-" * 112)
-    print(f"{'#': >3} | {'Stock (Yield)': <16} | {'Target ADI': <12} | {'Owned': <10} | {'Delta': <10} | {'Price': <10} | {'Total Cost': <12}")
-    print("-" * 112)
+    print("-" * 115)
+    print(f"{'#': >3} | {'Stock (Yield)': <16} | {'Target ADI': <12} | {'Owned': <10} | {'Delta': <10} | {'Total Cost': <35}")
+    print("-" * 115)
 
     for idx, row in enumerate(results):
         delta_str = f"{row['delta_shares']: >10.2f}" if row['delta_shares'] != float(
             '-inf') else "  N/A"
-        cost_str = f"{row['total_cost']: >10.2f} $" if row['total_cost'] != float(
-            'inf') else "  N/A"
+
+        if row['total_cost'] == float('inf'):
+            cost_info_str = "  N/A"
+        else:
+            cost_info_str = f"{row['total_cost']: >10,.2f} $ (@{row['current_price']:,.2f}/share)"
 
         # Highlight if already in portfolio
         marker = "*" if row['is_in_portfolio'] else " "
         stock_yield_str = f"{marker} {row['stock']} ({row['yield']:.2f}%)"
 
         print(
-            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_adi']: >10.2f} $ | {row['owned_shares']: >10.2f} | {delta_str} | {row['current_price']: >8.2f} $ | {cost_str}")
+            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_adi']: >10.2f} $ | {row['owned_shares']: >10.2f} | {delta_str} | {cost_info_str: <35}")
     # Calculate total required investment
     total_investment = sum(row['total_cost']
                            for row in results if row['total_cost'] != float('inf'))
 
-    print("-" * 112)
+    print("-" * 115)
     print(
         f"Total Required Investment to reach ADI goals ({total_target_adi:,.2f} $): {total_investment:,.2f} $")
     print("Delta = Owned - Target. Negative delta indicates missing shares needed to reach the target.")
     if holdings:
         print("(*) indicates stock already present in your portfolio.")
-    print("-" * 112)
+    print("-" * 115)
 
 
 def main():
@@ -243,16 +266,42 @@ def main():
     parser.add_argument("--wishlist", action="store_true",
                         help="Run only the wishlist target planning.")
 
+    # Portfolio Source selection
+    source_group = parser.add_mutually_exclusive_group()
+    source_group.add_argument(
+        "--ibkr", action="store_true", help="Source: IBKR Flex Query CSV (Default).")
+    source_group.add_argument(
+        "--xtb", action="store_true", help="Source: XTB CSV.")
+    source_group.add_argument(
+        "--tradeville", action="store_true", help="Source: Tradeville CSV.")
+    source_group.add_argument(
+        "--auto", action="store_true", help="Automatically detect the source (Future Release).")
+
     args = parser.parse_args()
+
+    # Determine the source
+    source = "ibkr"
+    if args.xtb:
+        source = "xtb"
+    elif args.tradeville:
+        source = "tradeville"
+    elif args.auto:
+        source = "auto"
 
     # If no flags are provided, default to running both
     run_all = not (args.portfolio or args.wishlist)
     holdings = None
 
     if args.portfolio or run_all:
-        portfolio = get_portfolio()
+        try:
+            portfolio = get_portfolio(source=source)
+        except (NotImplementedError, ValueError) as e:
+            print(f"\nError: {e}")
+            return
+
         if portfolio:
-            all_stocks, total_adi_full = process_portfolio(portfolio)
+            all_stocks, total_adi_full = process_portfolio(
+                portfolio, source=source)
             # Build a holdings lookup for Gap Analysis
             holdings = {s['ticker']: s['quantity'] for s in all_stocks}
 

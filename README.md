@@ -32,13 +32,20 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
      ```
 
 2. **Configure and Run**:
-   You can run the full analysis or target specific workflows using flags:
+   You can specify your portfolio data source using flags (defaulting to IBKR):
    ```bash
    export PORTFOLIO_PATH="path/to/your/portfolio.csv"
    
-   # Run full analysis (Portfolio + Wishlist)
-   python projects/dividends-builder/main.py
+   # Run with IBKR data (Standard)
+   python projects/dividends-builder/main.py --ibkr
    
+   # Future sources (currently raise NotImplementedError)
+   python projects/dividends-builder/main.py --xtb
+   python projects/dividends-builder/main.py --tradeville
+   ```
+
+   You can also target specific workflows:
+   ```bash
    # Run only portfolio analysis
    python projects/dividends-builder/main.py --portfolio
    
@@ -70,18 +77,18 @@ The tool can also calculate the required investment to reach specific annual div
        WISHLIST GAP ANALYSIS (ADI)
    ========================================
    Goal: Reach a Total Annual Dividend Income (ADI) of 345.00 $
-   -----------------------------------------------------------------------------------------------------------------
-     # | Stock (Yield)    | Target ADI   | Owned      | Delta      | Current Price  | Total Cost  
-   -----------------------------------------------------------------------------------------------------------------
-    1: | AAPL (0.40%)     |      25.00 $ |      10.00 |     -14.04 |       259.37 $ |    3,641.15 $
-    2: | MSFT (0.76%)     |      70.00 $ |       5.00 |     -14.23 |       479.28 $ |    6,819.50 $
-    3: | KO (2.89%)       |     100.00 $ |      20.00 |     -29.02 |        70.51 $ |    2,046.20 $
-    4: | TSM (1.04%)      |      50.00 $ |       0.00 |     -14.84 |       323.63 $ |    4,801.63 $
-    5: | SBUX (2.79%)     |     100.00 $ |      15.00 |     -25.32 |        88.88 $ |    2,250.77 $
-   -----------------------------------------------------------------------------------------------------------------
+   -------------------------------------------------------------------------------------------------------------------
+     # | Stock (Yield)    | Target ADI   | Owned      | Delta      | Total Cost                         
+   -------------------------------------------------------------------------------------------------------------------
+    1: | AAPL (0.40%)     |      25.00 $ |      10.00 |     -14.04 |    3,641.15 $ (@259.37/share)
+    2: | MSFT (0.76%)     |      70.00 $ |       5.00 |     -14.23 |    6,819.50 $ (@479.28/share)
+    3: | KO (2.89%)       |     100.00 $ |      20.00 |     -29.02 |    2,046.20 $ (@70.51/share)
+    4: | TSM (1.04%)      |      50.00 $ |       0.00 |     -14.84 |    4,801.63 $ (@323.63/share)
+    5: | SBUX (2.79%)     |     100.00 $ |      15.00 |     -25.32 |    2,250.77 $ (@88.88/share)
+   -------------------------------------------------------------------------------------------------------------------
    Total Required Investment to reach ADI goals (345.00 $): 19,559.25 $
    Delta = Owned - Target. Negative delta indicates missing shares needed to reach the target.
-   -----------------------------------------------------------------------------------------------------------------
+   -------------------------------------------------------------------------------------------------------------------
    ```
 
 ### Features
