@@ -147,7 +147,7 @@ def main():
     # Default threshold for filtering
     threshold = 15.0
     filtered_stocks, total_ada_filtered = filter_portfolio_by_threshold(
-        all_stocks, 0)
+        all_stocks, threshold)
 
     print(f"\nFiltered Portfolio (Annual dividend >= {threshold} USD):\n")
 
