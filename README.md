@@ -1,17 +1,114 @@
-# Stock Market
+# Stock Market Tools
 
-A python implementation for computing the necessary amount ($) to invest in a specific stock market based on the desired fractional share.
+This repository contains a collection of Python-based tools for stock market analysis and portfolio management.
 
-## Workflow
+## Repository Structure
 
-The goal of the project is to calculate the portfolio value (in USD) based on the invested stocks and their current market price. Available shares are given as input for each company. Using `yfinance` package, one can get the current market price of each company.
+The projects are located in the `projects/` directory:
 
-The companies are given as input strings into an array (e.g., `['MSFT','APPL,'SBUX']`), and using `Ticker` method within the Yahoo financial package, the *highest price of the day* can always be available via the call `float(stock_value.info['regularMarketDayHigh'])`. Conversion to `float` is done for further computations. Using the current market price and the available shares, it is straightforward to compute the total portfolio value.
+- [Stock Picker](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/stock-picker): A tool to calculate the necessary investment amount for reaching desired fractional share goals.
+- [Dividends Builder](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/dividends-builder): A tool to calculate annual dividend revenue based on a stock portfolio.
 
-As an additional step in the project is the compute the required amount for reaching a desired share amount per company. This is based on a constant value `OPTIMAL_SHARE` that represents the total shares desired, and then, by performing a proper computational workflow, the required amount is readily obtained.
+---
 
-Graphical representations under the form of *bar-charts* are made using `matplotlib`.
+## [Dividends Builder](projects/dividends-builder)
 
-## Issues
+The Dividends Builder tool helps you track and forecast your annual dividend income.
 
-The `xz` package was missing and the execution of a python script that had `yfinance` package couldn't execute properly. Solution was found [here](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple). The `xz` package was installed via Homebrew.
+### Usage
+
+1. **Prepare your Portfolio**: The tool is optimized for **Interactive Brokers (IBKR) Flex Query** reports in CSV format.
+   - **Dynamic Header Detection**: The script automatically scans your CSV file to find the row containing the `Symbol` header. This allows it to handle reports with a variable number of metadata lines (e.g., cash balance or account info rows).
+   - **Required Fields**: For a successful parse, the CSV must include at least these columns: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
+   - **Example format (`portfolio.csv`):**
+     ```csv
+     [Metadata line 1]
+     [Metadata line 2]
+     [Metadata line 3]
+     [Metadata line 4]
+     Symbol,Description,ISIN,Quantity,CostBasisPrice,FifoPnlUnrealized
+     AAPL,Apple Inc,US0378331005,15.5,170.25,500.00
+     MSFT,Microsoft Corp,US5949181045,5.0,380.00,200.00
+     ```
+
+2. **Configure and Run**:
+   You can run the full analysis or target specific workflows using flags:
+   ```bash
+   export PORTFOLIO_PATH="path/to/your/portfolio.csv"
+   
+   # Run full analysis (Portfolio + Wishlist)
+   python projects/dividends-builder/main.py
+   
+   # Run only portfolio analysis
+   python projects/dividends-builder/main.py --portfolio
+   
+   # Run only wishlist target planning
+   python projects/dividends-builder/main.py --wishlist
+   ```
+
+### Wishlist Analysis (Target Planning)
+The tool can also calculate the required investment to reach specific annual dividend goals using a `wishlist.csv` file.
+
+1. **Create `projects/dividends-builder/wishlist.csv`**:
+   - **Format**: `STOCK, TARGET_TDA`
+   - **Example**:
+     ```csv
+     STOCK, TARGET_TDA
+     AAPL, 25
+     MSFT, 70
+     KO, 100
+     TSM, 50
+     SBUX, 100
+     ```
+
+2. **View the Roadmap**:
+   The script provides a strategic roadmap with required shares and total capital needed.
+
+   **Example Output**:
+   ```text
+   ========================================
+       WISHLIST GAP ANALYSIS (ADI)
+   ========================================
+   Goal: Reach a Total Annual Dividend Income (ADI) of 345.00 $
+   -----------------------------------------------------------------------------------------------------------------
+     # | Stock (Yield)    | Target ADI   | Owned      | Delta      | Current Price  | Total Cost  
+   -----------------------------------------------------------------------------------------------------------------
+    1: | AAPL (0.40%)     |      25.00 $ |      10.00 |     -14.04 |       259.37 $ |    3,641.15 $
+    2: | MSFT (0.76%)     |      70.00 $ |       5.00 |     -14.23 |       479.28 $ |    6,819.50 $
+    3: | KO (2.89%)       |     100.00 $ |      20.00 |     -29.02 |        70.51 $ |    2,046.20 $
+    4: | TSM (1.04%)      |      50.00 $ |       0.00 |     -14.84 |       323.63 $ |    4,801.63 $
+    5: | SBUX (2.79%)     |     100.00 $ |      15.00 |     -25.32 |        88.88 $ |    2,250.77 $
+   -----------------------------------------------------------------------------------------------------------------
+   Total Required Investment to reach ADI goals (345.00 $): 19,559.25 $
+   Delta = Owned - Target. Negative delta indicates missing shares needed to reach the target.
+   -----------------------------------------------------------------------------------------------------------------
+   ```
+
+### Features
+- Fetches real-time dividend data using `yfinance`.
+- Correctly handles yield percentages (e.g., 0.4 interpreted as 0.4%).
+- Provides individual stock reports and a total portfolio **Annual Dividend Income (ADI)**.
+- **Target Planning**: Calculate required capital and shares to reach ADI goals using a "blueprint" approach.
+- **Flexible Execution**: Use CLI flags to run specific parts of the analysis independently.
+- Robust error handling for missing symbols or `yfinance` connectivity issues.
+
+---
+
+## [Stock Picker](file:///Users/svc_sps/Documents/GitHub/stock-market/projects/stock-picker)
+
+The Stock Picker tool computes the investment needed to achieve specific fractional share targets.
+
+### Features
+- Uses `yfinance` to get current market prices (specifically `regularMarketDayHigh`).
+- Calculates the gap between current holdings and an `OPTIMAL_SHARE` target.
+- Generates visual reports using `matplotlib`.
+
+## Setup and Issues
+
+### LZMA/XZ Dependency
+If you encounter issues with `yfinance` or `lzma` imports, you may need to install the `xz` package. On macOS, this can be done via Homebrew:
+
+```bash
+brew install xz
+```
+For more details, see [this StackOverflow discussion](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple).
