@@ -147,15 +147,15 @@ def main():
     # Default threshold for filtering
     threshold = 15.0
     filtered_stocks, total_ada_filtered = filter_portfolio_by_threshold(
-        all_stocks, threshold)
+        all_stocks, 0)
 
     print(f"\nFiltered Portfolio (Annual dividend >= {threshold} USD):\n")
 
     if not filtered_stocks:
         print("No stocks meet the specified dividend threshold.")
     else:
-        for stock in filtered_stocks:
-            print(f"Stock: {stock['ticker']: <6} | Quantity: {stock['quantity']: >8.2f} | "
+        for idx, stock in enumerate(filtered_stocks):
+            print(f"{(idx+1): >2}: {stock['ticker']: <6} | Quantity: {stock['quantity']: >8.2f} | "
                   f"Yield: {stock['yield']: >5.2f}% | "
                   f"Anually: {stock['annual_dividend_per_share']: >6.2f} $/share | "
                   f"Total: {stock['annual_revenue']: >10.2f} $")
