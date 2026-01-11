@@ -17,9 +17,9 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
 
 ### Usage
 
-1. **Prepare your Portfolio**: The tool parses a CSV export of your portfolio.
-   - **Flexible Header Detection**: The script checks the first line for the `Symbol` field. If not found, it automatically skips the first **4 lines** (assuming they contain metadata).
-   - The CSV must contain the following fields: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
+1. **Prepare your Portfolio**: The tool is optimized for **Interactive Brokers (IBKR) Flex Query** reports in CSV format.
+   - **Dynamic Header Detection**: The script automatically scans your CSV file to find the row containing the `Symbol` header. This allows it to handle reports with a variable number of metadata lines (e.g., cash balance or account info rows).
+   - **Required Fields**: For a successful parse, the CSV must include at least these columns: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
    - **Example format (`portfolio.csv`):**
      ```csv
      [Metadata line 1]
@@ -58,25 +58,25 @@ The tool can also calculate the required investment to reach specific annual div
 
    **Example Output**:
    ```text
-   Wishlist Analysis (Required Investment to reach Target TDA 345.00 $):
+   Wishlist Analysis (Required Investment to reach Target ADI 345.00 $):
    --------------------------------------------------------------------------------------------------------------
-     # | Stock (Yield)    | Target TDA | Req. Shares  | Price    | Total Cost  
+     # | Stock (Yield)    | Target ADI | Req. Shares  | Current Price  | Total Cost  
    --------------------------------------------------------------------------------------------------------------
-    1: | AAPL (0.40%)     |    25.00 $ |      24.0385 |  259.37 $ |    6234.87 $
-    2: | MSFT (0.76%)     |    70.00 $ |      19.2308 |  479.28 $ |    9216.94 $
-    3: | KO (2.89%)       |   100.00 $ |      49.0196 |   70.51 $ |    3456.37 $
-    4: | TSM (1.04%)      |    50.00 $ |      14.8368 |  323.63 $ |    4801.63 $
-    5: | SBUX (2.79%)     |   100.00 $ |      40.3226 |   88.88 $ |    3583.87 $
+    1: | AAPL (0.40%)     |    25.00 $ |      24.0385 |       259.37 $ |    6,234.87 $
+    2: | MSFT (0.76%)     |    70.00 $ |      19.2308 |       479.28 $ |    9,216.94 $
+    3: | KO (2.89%)       |   100.00 $ |      49.0196 |        70.51 $ |    3,456.37 $
+    4: | TSM (1.04%)      |    50.00 $ |      14.8368 |       323.63 $ |    4,801.63 $
+    5: | SBUX (2.79%)     |   100.00 $ |      40.3226 |        88.88 $ |    3,583.87 $
    --------------------------------------------------------------------------------------------------------------
-   Total Required Investment to reach target ADA goals: 27,293.65 $
+   Total Required Investment to reach ADI goals: 27,293.68 $
    --------------------------------------------------------------------------------------------------------------
    ```
 
 ### Features
 - Fetches real-time dividend data using `yfinance`.
 - Correctly handles yield percentages (e.g., 0.4 interpreted as 0.4%).
-- Provides individual stock reports and a total Portfolio Annual Dividend Amount (ADA).
-- **Target Planning**: Calculate required capital and shares to reach annual income goals.
+- Provides individual stock reports and a total portfolio **Annual Dividend Income (ADI)**.
+- **Target Planning**: Calculate required capital and shares to reach ADI goals.
 - Robust error handling for missing symbols or `yfinance` connectivity issues.
 
 ---
