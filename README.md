@@ -38,10 +38,45 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
    python projects/dividends-builder/main.py
    ```
 
+### Wishlist Analysis (Target Planning)
+The tool can also calculate the required investment to reach specific annual dividend goals using a `wishlist.csv` file.
+
+1. **Create `projects/dividends-builder/wishlist.csv`**:
+   - **Format**: `STOCK, TARGET_TDA`
+   - **Example**:
+     ```csv
+     STOCK, TARGET_TDA
+     AAPL, 25
+     MSFT, 70
+     KO, 100
+     TSM, 50
+     SBUX, 100
+     ```
+
+2. **View the Roadmap**:
+   When you run the script, it will provide a breakdown of how many shares you need and the total capital required to reach those targets.
+
+   **Example Output**:
+   ```text
+   Wishlist Analysis (Required Investment to reach Target TDA 345.00 $):
+   --------------------------------------------------------------------------------------------------------------
+     # | Stock (Yield)    | Target TDA | Req. Shares  | Price    | Total Cost  
+   --------------------------------------------------------------------------------------------------------------
+    1: | AAPL (0.40%)     |    25.00 $ |      24.0385 |  259.37 $ |    6234.87 $
+    2: | MSFT (0.76%)     |    70.00 $ |      19.2308 |  479.28 $ |    9216.94 $
+    3: | KO (2.89%)       |   100.00 $ |      49.0196 |   70.51 $ |    3456.37 $
+    4: | TSM (1.04%)      |    50.00 $ |      14.8368 |  323.63 $ |    4801.63 $
+    5: | SBUX (2.79%)     |   100.00 $ |      40.3226 |   88.88 $ |    3583.87 $
+   --------------------------------------------------------------------------------------------------------------
+   Total Required Investment to reach target ADA goals: 27,293.65 $
+   --------------------------------------------------------------------------------------------------------------
+   ```
+
 ### Features
 - Fetches real-time dividend data using `yfinance`.
 - Correctly handles yield percentages (e.g., 0.4 interpreted as 0.4%).
 - Provides individual stock reports and a total Portfolio Annual Dividend Amount (ADA).
+- **Target Planning**: Calculate required capital and shares to reach annual income goals.
 - Robust error handling for missing symbols or `yfinance` connectivity issues.
 
 ---

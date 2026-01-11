@@ -20,19 +20,21 @@ The core analytical logic follows a sequential calculation model:
 3.  **Revenue Thresholding (Filtering)**: Assets are evaluated against a predefined threshold (default: $15.0$ USD/annum). Assets failing to meet this criterion are excluded from the detailed reporting phase.
 4.  **Portfolio Aggregation**: The Total Annual Dividend Amount (ADA) is calculated for both the comprehensive portfolio and the filtered subset.
 
+### 3. Wishlist Analysis (Target Planning)
+A special analysis is performed on a `wishlist.csv` file to determine the investment required to reach specific dividend income goals:
+- **Share Calculation**: `Required Shares = Target TDA / Annual Dividend per Share`.
+- **Valuation**: `Total Cost = Required Shares * Current Market Price`.
+- **Precision**: Shares are calculated up to 4 decimal places.
+
 ## IV. Presentation and Reporting Logic
 The reporting module generates a hierarchical summary:
 
 1.  **Portfolio Summary**: Immediate display of the total ADA for the entire input dataset.
-2.  **Filtered Breakdown**: A granular report for each asset meeting the threshold, including:
-    *   Ticker and Quantity.
-    *   Yield Percentage.
-    *   Annualized Dividend per Share.
-    *   Projected Annual Revenue.
-3.  **Aggregate Filtered ADA**: Final summation of the projected income from the primary earners.
+2.  **Filtered Breakdown**: A granular report for each asset meeting the portfolio threshold.
+3.  **Wishlist Analysis Table**: A dedicated table showing the roadmap to reach target dividend amounts for specified stocks, including required shares and total investment value.
 
 ## V. Deployment and Execution Guide
-Execution requires the definition of the `PORTFOLIO_PATH` environment variable.
+Execution requires the definition of the `PORTFOLIO_PATH` environment variable. The `wishlist.csv` should be located in the same directory as the script.
 
 1.  **Environment Configuration**:
     ```bash
