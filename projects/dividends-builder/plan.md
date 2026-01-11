@@ -20,11 +20,13 @@ The core analytical logic follows a sequential calculation model:
 3.  **Revenue Thresholding (Filtering)**: Assets are evaluated against a predefined threshold (default: $15.0$ USD/annum). Assets failing to meet this criterion are excluded from the detailed reporting phase.
 4.  **Portfolio Aggregation**: The **Annual Dividend Income (ADI)** is calculated for both the comprehensive portfolio and the filtered subset.
 
-### 3. Wishlist Analysis (Target Planning)
-A special analysis is performed on a `wishlist.csv` file to determine the investment required to reach specific dividend income goals:
-- **Share Calculation**: `Required Shares = Target ADI / Annual Dividend per Share`.
-- **Valuation**: `Total Cost = Required Shares * Current Market Price`.
-- **Precision**: Shares are calculated up to 4 decimal places.
+### 3. Wishlist Gap Analysis (Target Planning)
+When both portfolio and wishlist workflows are active, the system performs a **Gap Analysis**:
+- **Cross-Referencing**: Each wishlist stock is checked against current portfolio holdings.
+- **Differential Calculation**: The system identifies the "dividend income gap" between the current ADI of owned shares and the target ADI goal.
+- **Adjusted Targets**: `Required Shares = (Target ADI - Current ADI) / Annual Dividend per Share`.
+- **Valuation**: `Total Cost = Adjusted Required Shares * Current Market Price`.
+- **Visual Feedback**: Wishlist stocks already present in the portfolio are marked with an asterisk (`*`) and their current share count is displayed.
 
 ## IV. Presentation and Reporting Logic
 The reporting module generates a hierarchical summary with distinct sections:
@@ -34,7 +36,7 @@ The reporting module generates a hierarchical summary with distinct sections:
     *   **Primary Dividend Sources**: A concise table of assets meeting the threshold, combining Ticker and Yield for clarity.
 2.  **Wishlist Target Planning (ADI)**: A strategic roadmap for future targets.
     *   Target ADI goal for the entire wishlist.
-    *   A detailed table showing required shares and total investment (formatted with commas for thousands).
+    *   A detailed table showing the target gap (Delta) and total investment (formatted with commas for thousands).
     *   Final aggregate investment requirement.
 
 ## V. Deployment and Execution Guide
