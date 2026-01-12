@@ -17,10 +17,14 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
 
 ### Usage
 
-1. **Prepare your Portfolio**: The tool is optimized for **Interactive Brokers (IBKR) Flex Query** reports in CSV format.
-   - **Dynamic Header Detection**: The script automatically scans your CSV file to find the row containing the `Symbol` header. This allows it to handle reports with a variable number of metadata lines (e.g., cash balance or account info rows).
+1. **Prepare your Portfolio**: Place your CSV reports in a dedicated directory. The tool searches for specific, strict filenames within this directory:
+   - **IBKR**: `ibkr.csv`
+   - **XTB**: `xtb.csv`
+   - **Tradeville**: `tradeville.csv`
+
+   - **Dynamic Header Detection (IBKR)**: For IBKR, the script automatically scans the `ibkr.csv` file to find the row containing the `Symbol` header, bypassing metadata lines.
    - **Required Fields**: For a successful parse, the CSV must include at least these columns: `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, `FifoPnlUnrealized`.
-   - **Example format (`portfolio.csv`):**
+   - **Example format (`ibkr.csv`):**
      ```csv
      [Metadata line 1]
      [Metadata line 2]
@@ -32,13 +36,20 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
      ```
 
 2. **Configure and Run**:
-   You can run the full analysis or target specific workflows using flags:
+   Specify the **directory path** containing your portfolio files using the `PORTFOLIO_PATH` environment variable:
    ```bash
-   export PORTFOLIO_PATH="path/to/your/portfolio.csv"
+   export PORTFOLIO_PATH="path/to/your/data_directory/"
    
-   # Run full analysis (Portfolio + Wishlist)
-   python projects/dividends-builder/main.py
+   # Run with IBKR data (Standard)
+   python projects/dividends-builder/main.py --ibkr
    
+   # Future sources (currently raise NotImplementedError)
+   python projects/dividends-builder/main.py --xtb
+   python projects/dividends-builder/main.py --tradeville
+   ```
+
+   You can also target specific workflows:
+   ```bash
    # Run only portfolio analysis
    python projects/dividends-builder/main.py --portfolio
    
@@ -50,15 +61,17 @@ The Dividends Builder tool helps you track and forecast your annual dividend inc
 The tool can also calculate the required investment to reach specific annual dividend goals using a `wishlist.csv` file.
 
 1. **Create `projects/dividends-builder/wishlist.csv`**:
-   - **Format**: `STOCK, TARGET_ADI`
+   - **Format**: `STOCK, TARGET_ADI, CURRENCY`
+   - **Note**: The reporting currency is defined in the 3rd column of the **header line** only (e.g., `USD` or `RON`).
    - **Example**:
      ```csv
-     STOCK, TARGET_ADI
-     AAPL, 25
-     MSFT, 70
-     KO, 100
-     TSM, 50
-     SBUX, 100
+     STOCK, TARGET_ADI, USD
+     AAPL, 30
+     MSFT, 30
+     KO, 50
+     TSM, 30
+     SBUX, 50
+     MRK, 30
      ```
 
 2. **View the Roadmap**:
@@ -70,18 +83,18 @@ The tool can also calculate the required investment to reach specific annual div
        WISHLIST GAP ANALYSIS (ADI)
    ========================================
    Goal: Reach a Total Annual Dividend Income (ADI) of 345.00 $
-   -----------------------------------------------------------------------------------------------------------------
-     # | Stock (Yield)    | Target ADI   | Owned      | Delta      | Current Price  | Total Cost  
-   -----------------------------------------------------------------------------------------------------------------
-    1: | AAPL (0.40%)     |      25.00 $ |      10.00 |     -14.04 |       259.37 $ |    3,641.15 $
-    2: | MSFT (0.76%)     |      70.00 $ |       5.00 |     -14.23 |       479.28 $ |    6,819.50 $
-    3: | KO (2.89%)       |     100.00 $ |      20.00 |     -29.02 |        70.51 $ |    2,046.20 $
-    4: | TSM (1.04%)      |      50.00 $ |       0.00 |     -14.84 |       323.63 $ |    4,801.63 $
-    5: | SBUX (2.79%)     |     100.00 $ |      15.00 |     -25.32 |        88.88 $ |    2,250.77 $
-   -----------------------------------------------------------------------------------------------------------------
+   -------------------------------------------------------------------------------------------------------------------
+     # | Stock (Yield)    | Target ADI   | Owned      | Delta      | Total Cost                         
+   -------------------------------------------------------------------------------------------------------------------
+    1: | AAPL (0.40%)     |      25.00 $ |      10.00 |     -14.04 |    3,641.15 $ (@259.37/share)
+    2: | MSFT (0.76%)     |      70.00 $ |       5.00 |     -14.23 |    6,819.50 $ (@479.28/share)
+    3: | KO (2.89%)       |     100.00 $ |      20.00 |     -29.02 |    2,046.20 $ (@70.51/share)
+    4: | TSM (1.04%)      |      50.00 $ |       0.00 |     -14.84 |    4,801.63 $ (@323.63/share)
+    5: | SBUX (2.79%)     |     100.00 $ |      15.00 |     -25.32 |    2,250.77 $ (@88.88/share)
+   -------------------------------------------------------------------------------------------------------------------
    Total Required Investment to reach ADI goals (345.00 $): 19,559.25 $
    Delta = Owned - Target. Negative delta indicates missing shares needed to reach the target.
-   -----------------------------------------------------------------------------------------------------------------
+   -------------------------------------------------------------------------------------------------------------------
    ```
 
 ### Features
@@ -112,3 +125,7 @@ If you encounter issues with `yfinance` or `lzma` imports, you may need to insta
 brew install xz
 ```
 For more details, see [this StackOverflow discussion](https://stackoverflow.com/questions/57743230/userwarning-could-not-import-the-lzma-module-your-installed-python-is-incomple).
+
+## Useful Resources
+
+- [A Relaxed Optimization Approach for Cardinality-Constrained Portfolio Optimization](https://arxiv.org/pdf/1810.10563) - Jize Zhang, Tim Leung, Aleksandr Aravkin (2018).
