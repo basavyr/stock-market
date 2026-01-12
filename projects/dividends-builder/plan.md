@@ -6,10 +6,11 @@ The primary objective of this project is to develop a standardized framework for
 ## II. Data Acquisition and Preprocessing Protocol
 The system utilizes a hybrid data acquisition strategy, combining local CSV parsing with real-time API integration:
 
-*   **Ingestion**: Portfolio data is sourced from standardized CSV exports. The system supports multiple brokers through dedicated parsers, selectable via CLI flags (e.g., `--ibkr`, `--xtb`, `--tradeville`).
-*   **Dynamic Header Detection (IBKR)**: To accommodate varying export formats, the IBKR parser dynamically scans for the row containing the `Symbol` field. This allows it to bypass an arbitrary number of metadata or cash balance lines.
+*   **Ingestion**: Portfolio data is sourced from a centralized directory (defined by `PORTFOLIO_PATH`). The system explicitly searches for strict filenames based on the selected broker: `ibkr.csv`, `xtb.csv`, or `tradeville.csv`.
+*   **Dynamic Header Detection (IBKR & Tradeville)**: The system supports both IBKR Flex Queries and Tradeville CSV exports. The Tradeville parser specifically handles "SEP=" delimiter specifications and automatically suffixes BVB symbols with ".RO" for yfinance compatibility.
 *   **Field Mapping**: Required attributes include `Symbol`, `Description`, `ISIN`, `Quantity`, `CostBasisPrice`, and `FifoPnlUnrealized`. (Note: Field names may vary by broker source).
 *   **Real-time Integration**: The `yfinance` library is employed to fetch live market data. To ensure a clean terminal interface, internal HTTP exception logging is suppressed for non-critical errors.
+*   **Currency Conversion Engine**: The system implements an automated exchange rate engine. If the stock's listing currency (e.g., USD for AAPL) differs from the wishlist's target currency (detected from the CSV header), the script automatically fetches live exchange rates (e.g., `USDRON=X`) and normalizes all dividends and prices for consistent analysis.
 *   **Progress Tracking**: Computational progress is monitored via the `tqdm` library, providing visual feedback during high-latency data retrieval operations.
 
 ## III. Computational Methodology
@@ -35,6 +36,7 @@ The reporting module generates a hierarchical summary with distinct sections:
     *   Total Portfolio Annual Dividend Income (ADI) display.
     *   **Primary Dividend Sources**: A concise table of assets meeting the threshold, combining Ticker and Yield for clarity.
 2.  **Wishlist Target Planning (ADI)**: A strategic roadmap for future targets.
+    *   **Dynamic Currency Detection**: The reporting currency is extracted directly from the `wishlist.csv` header (3rd field), allowing targets to be set in either USD or RON independently of the portfolio source.
     *   Target ADI goal for the entire wishlist.
     *   A detailed table showing the target gap (Delta) and total investment (formatted with commas for thousands).
     *   Final aggregate investment requirement.
@@ -44,7 +46,8 @@ Execution requires the definition of the `PORTFOLIO_PATH` environment variable. 
 
 1.  **Environment Configuration**:
     ```bash
-    export PORTFOLIO_PATH="/path/to/portfolio.csv"
+    # Point to the directory containing your portfolio files
+    export PORTFOLIO_PATH="/path/to/portfolio_directory/"
     ```
 2.  **System Execution**:
     ```bash

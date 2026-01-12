@@ -12,20 +12,59 @@ WISHLIST_PATH = os.path.join(os.path.dirname(__file__), "wishlist.csv")
 
 # Supported portfolio data sources and their implementation status
 SUPPORTED_SOURCES = {
-    "ibkr": "Interactive Brokers (Implemented)",
-    "xtb": "XTB (Planned)",
-    "tradeville": "Tradeville (Planned)",
-    "auto": "Automatic Detection (Planned)"
+    "ibkr": {"name": "Interactive Brokers", "filename": "ibkr.csv", "status": "Implemented", "currency": "$", "iso": "USD"},
+    "xtb": {"name": "XTB", "filename": "xtb.csv", "status": "Planned", "currency": "$", "iso": "USD"},
+    "tradeville": {"name": "Tradeville", "filename": "tradeville.csv", "status": "Implemented", "currency": "RON", "iso": "RON"},
+    "auto": {"name": "Automatic Detection", "filename": None, "status": "Planned", "currency": "$", "iso": "USD"}
 }
+
+# Cache for exchange rates to avoid redundant API calls
+EXCHANGE_RATE_CACHE = {}
+
+
+def get_exchange_rate(from_currency, to_currency):
+    """
+    Fetches the current exchange rate between two currencies using yfinance.
+
+    Args:
+        from_currency (str): The source currency code (e.g., 'USD').
+        to_currency (str): The target currency code (e.g., 'RON').
+
+    Returns:
+        float: The exchange rate (1 unit of from_currency = X units of to_currency).
+    """
+    if from_currency == to_currency:
+        return 1.0
+
+    pair = f"{from_currency}{to_currency}=X"
+    if pair in EXCHANGE_RATE_CACHE:
+        return EXCHANGE_RATE_CACHE[pair]
+
+    try:
+        # Some symbols use a simplified format in yfinance
+        rate_ticker = yf.Ticker(pair)
+
+        # history() is often more reliable than info[] for FX pairs on weekends
+        hist = rate_ticker.history(period="1d")
+        if not hist.empty:
+            rate = hist['Close'].iloc[-1]
+            EXCHANGE_RATE_CACHE[pair] = rate
+            return rate
+
+        rate = rate_ticker.info.get("regularMarketPrice")
+
+        if rate is None:
+            return 1.0
+
+        EXCHANGE_RATE_CACHE[pair] = rate
+        return rate
+    except Exception:
+        return 1.0
 
 
 def get_portfolio(source="ibkr"):
     """
-    Parses the portfolio CSV file and returns a list of stock holdings.
-
-    Supports multiple data sources (currently only IBKR is implemented).
-    The IBKR parser dynamically detects the header row by searching for the "Symbol"
-    field, allowing it to handle variable metadata lines.
+    Parses the portfolio CSV file from the specified directory and returns a list of stock holdings.
 
     Args:
         source (str): The data source type ('ibkr', 'xtb', 'tradeville').
@@ -36,28 +75,77 @@ def get_portfolio(source="ibkr"):
     if source not in SUPPORTED_SOURCES:
         raise ValueError(f"Unknown data source: '{source}'.")
 
-    if source != "ibkr":
-        raise NotImplementedError(
-            f"Parsing for '{source}' ({SUPPORTED_SOURCES[source]}) data is not implemented yet.")
+    source_info = SUPPORTED_SOURCES[source]
 
-    portfolio_path = os.getenv("PORTFOLIO_PATH", None)
-    if portfolio_path is None:
+    # Check implementation status
+    if source_info["status"] != "Implemented":
+        raise NotImplementedError(
+            f"Parsing for '{source}' ({source_info['name']}) data is not implemented yet.")
+
+    portfolio_dir = os.getenv("PORTFOLIO_PATH", None)
+    if portfolio_dir is None:
         print("\nError: PORTFOLIO_PATH environment variable is not set. Portfolio analysis cannot proceed.")
         return None
 
-    with open(portfolio_path, 'r', encoding='utf-8') as reader:
-        lines = reader.readlines()
+    if not os.path.isdir(portfolio_dir):
+        print(
+            f"\nError: PORTFOLIO_PATH is not a valid directory: {portfolio_dir}")
+        return None
 
-        # Find the index of the header row containing 'Symbol'
-        header_row_idx = 0
-        for i, line in enumerate(lines):
-            if 'Symbol' in line:
-                header_row_idx = i
-                break
+    filename = source_info["filename"]
+    file_path = os.path.join(portfolio_dir, filename)
 
-        # Parse starting from the detected header row
-        portfolio = csv.DictReader(lines[header_row_idx:])
-        return list(portfolio)
+    if not os.path.exists(file_path):
+        print(
+            f"\nError: Portfolio file '{filename}' for source '{source}' not found in: {portfolio_dir}")
+        return None
+
+    if source == "ibkr":
+        with open(file_path, 'r', encoding='utf-8') as reader:
+            lines = reader.readlines()
+
+            # Find the index of the header row containing 'Symbol'
+            header_row_idx = 0
+            for i, line in enumerate(lines):
+                if 'Symbol' in line:
+                    header_row_idx = i
+                    break
+
+            # Parse starting from the detected header row
+            portfolio = csv.DictReader(lines[header_row_idx:])
+            return list(portfolio)
+
+    elif source == "tradeville":
+        with open(file_path, 'r', encoding='utf-8') as reader:
+            # Tradeville files often specify delimiter in the first line (e.g., SEP=	)
+            first_line = reader.readline()
+            delimiter = '\t'  # Default to tab
+            if first_line.startswith('SEP='):
+                delimiter = first_line.split('=')[1].strip('\n\r')
+            else:
+                reader.seek(0)
+
+            reader_csv = csv.DictReader(reader, delimiter=delimiter)
+            portfolio = []
+            for row in reader_csv:
+                # Skip cash lines or empty symbols
+                ticker = row.get('simbol')
+                if not ticker or ticker == 'RON':
+                    continue
+
+                # Suffix .RO for Bucharest Stock Exchange (BVB) symbols to work with yfinance
+                if not ticker.endswith('.RO'):
+                    ticker = f"{ticker}.RO"
+
+                portfolio.append({
+                    'Symbol': ticker,
+                    'Quantity': row.get('sold', '0'),
+                    'Description': row.get('nume', ''),
+                    'ISIN': row.get('isin', '')
+                })
+            return portfolio
+
+    return None
 
 
 def get_stock_data(ticker: str):
@@ -68,7 +156,7 @@ def get_stock_data(ticker: str):
         ticker (str): The stock symbol (e.g., 'AAPL').
 
     Returns:
-        tuple: (dividend_yield, annual_dividend_per_share, current_price) if successful.
+        tuple: (dividend_yield, annual_dividend_per_share, current_price, currency) if successful.
         None: If the data cannot be retrieved or essential fields are missing.
     """
     try:
@@ -81,26 +169,30 @@ def get_stock_data(ticker: str):
 
         dividend_yield = info.get("dividendYield")
         current_price = info.get("currentPrice")
+        currency = info.get("currency", "USD")
 
         if dividend_yield is None:
-            return 0.0, 0.0, current_price
+            return 0.0, 0.0, current_price, currency
 
-        # Apply 1e-2 multiplier as the yield is provided in percentage (e.g., 0.4 for 0.4%)
-        annual_dividend_per_share = round(
-            current_price * dividend_yield * 1e-2, 2)
-        return dividend_yield, annual_dividend_per_share, current_price
+        # Calculate with full precision to avoid multiplying rounding errors during conversion
+        annual_dividend_per_share = current_price * dividend_yield * 1e-2
+        return dividend_yield, annual_dividend_per_share, current_price, currency
 
+    except (AttributeError, KeyError, ValueError, TypeError):
+        return None
     except Exception:
+        # Catch-all for any other yfinance specific issues while remaining relatively safe
         return None
 
 
-def process_portfolio(portfolio, source="IBKR"):
+def process_portfolio(portfolio, source="IBKR", currency="$"):
     """
     Fetches dividend data for all stocks in the portfolio.
 
     Args:
         portfolio (list): A list of dictionaries representing stock holdings.
         source (str): Human-readable name of the portfolio source for display.
+        currency (str): Currency symbol to use for display.
 
     Returns:
         tuple: (all_stock_data, total_adi_full) where all_stock_data is a list of
@@ -120,7 +212,7 @@ def process_portfolio(portfolio, source="IBKR"):
         if stock_data is None:
             continue
 
-        div_yield, annual_dividend_per_share, _ = stock_data
+        div_yield, annual_dividend_per_share, _, _ = stock_data
         annual_revenue = round(annual_dividend_per_share * quantity, 2)
 
         all_stock_data.append({
@@ -157,6 +249,11 @@ def process_wishlist(holdings=None):
     Parses wishlist.csv and calculates required shares and investment to reach 
     target Annual Dividend Income (ADI), accounting for current holdings if provided.
 
+    The currency is detected from the 3rd column of the CSV header.
+    Format: STOCK, TARGET_ADI, [CURRENCY]
+
+    NOTE: The required investment in local currency (RON) depends only on the dividend yield, not on the exchange rate.
+
     Args:
         holdings (dict, optional): A dictionary mapping ticker symbols to current quantities.
     """
@@ -166,9 +263,22 @@ def process_wishlist(holdings=None):
         return
 
     wishlist = []
+    detected_currency_symbol = "$"  # Default label
+    target_iso_currency = "USD"
     with open(WISHLIST_PATH, 'r', encoding='utf-8') as reader:
         # Handling potential trailing commas or dots as mentioned by the user
         data = csv.DictReader(reader, skipinitialspace=True)
+
+        # Detect currency from the header (3rd field)
+        header_fields = data.fieldnames
+        if header_fields and len(header_fields) >= 3:
+            raw_currency = header_fields[2].strip().upper()
+            target_iso_currency = raw_currency
+            if raw_currency == "USD":
+                detected_currency_symbol = "$"
+            else:
+                detected_currency_symbol = raw_currency
+
         for row in data:
             stock = row['STOCK'].strip()
             # Remove any non-numeric characters like trailing dots
@@ -183,7 +293,14 @@ def process_wishlist(holdings=None):
         if data is None:
             continue
 
-        div_yield, div_per_share, current_price = data
+        div_yield, div_per_share, current_price, listing_currency = data
+
+        # Currency Conversion Logic
+        rate = 1.0
+        if listing_currency != target_iso_currency:
+            rate = get_exchange_rate(listing_currency, target_iso_currency)
+            div_per_share = div_per_share * rate
+            current_price = current_price * rate
 
         current_quantity = holdings.get(ticker, 0.0) if holdings else 0.0
         target_adi = item['target_adi']
@@ -207,6 +324,8 @@ def process_wishlist(holdings=None):
             'required_buy': required_to_buy,
             'total_cost': total_cost,
             'current_price': current_price,
+            'rate': rate,
+            'listing_currency': listing_currency,
             'yield': div_yield,
             'is_in_portfolio': (ticker in holdings) if holdings else False
         })
@@ -219,10 +338,9 @@ def process_wishlist(holdings=None):
     print("\n" + "=" * 40)
     print(f"    {analysis_title}")
     print("=" * 40)
-    print(
-        f"Goal: Reach a Total Annual Dividend Income (ADI) of {total_target_adi:,.2f} $")
     print("-" * 115)
-    print(f"{'#': >3} | {'Stock (Yield)': <16} | {'Target ADI': <12} | {'Owned': <10} | {'Delta': <10} | {'Total Cost': <35}")
+    print(f"{'#': >3} | {'Stock (Yield)': <16} | {f'Target ADI ({detected_currency_symbol})': <20} | {
+          'Owned': <10} | {'Delta': <10} | {f'Total Cost ({detected_currency_symbol})': <35}")
     print("-" * 115)
 
     for idx, row in enumerate(results):
@@ -232,22 +350,23 @@ def process_wishlist(holdings=None):
         if row['total_cost'] == float('inf'):
             cost_info_str = "  N/A"
         else:
-            cost_info_str = f"{row['total_cost']: >10,.2f} $ (@{row['current_price']:,.2f}/share)"
+            cost_info_str = f"{row['total_cost']: >10,.2f} (@{row['current_price']:,.2f}/share)"
 
         # Highlight if already in portfolio
         marker = "*" if row['is_in_portfolio'] else " "
         stock_yield_str = f"{marker} {row['stock']} ({row['yield']:.2f}%)"
 
         print(
-            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_adi']: >10.2f} $ | {row['owned_shares']: >10.2f} | {delta_str} | {cost_info_str: <35}")
+            f"{(idx+1): >2}: | {stock_yield_str: <16} | {row['target_adi']: >18.2f} | {row['owned_shares']: >10.2f} | {delta_str} | {cost_info_str: <35}")
     # Calculate total required investment
     total_investment = sum(row['total_cost']
                            for row in results if row['total_cost'] != float('inf'))
 
     print("-" * 115)
     print(
-        f"Total Required Investment to reach ADI goals ({total_target_adi:,.2f} $): {total_investment:,.2f} $")
-    print("Delta = Owned - Target. Negative delta indicates missing shares needed to reach the target.")
+        f"Total Required Investment to reach ADI goals ({total_target_adi:,.2f} {detected_currency_symbol}): {total_investment:,.2f} {detected_currency_symbol}")
+
+    print("\nDelta = Owned - Target. Negative delta indicates missing shares needed to reach the target.")
     if holdings:
         print("(*) indicates stock already present in your portfolio.")
     print("-" * 115)
@@ -299,14 +418,16 @@ def main():
             print(f"\nError: {e}")
             return
 
+        source_currency = SUPPORTED_SOURCES[source].get("currency", "$")
+
         if portfolio:
             all_stocks, total_adi_full = process_portfolio(
-                portfolio, source=source)
+                portfolio, source=source, currency=source_currency)
             # Build a holdings lookup for Gap Analysis
             holdings = {s['ticker']: s['quantity'] for s in all_stocks}
 
             print(
-                f"\nPortfolio Annual Dividend Income (ADI): {total_adi_full: >10.2f} $")
+                f"\nPortfolio Annual Dividend Income (ADI): {total_adi_full: >10.2f} {source_currency}")
             print("-" * 90)
 
             # ... rest of portfolio processing ...
@@ -314,9 +435,10 @@ def main():
             filtered_stocks, total_adi_filtered = filter_portfolio_by_threshold(
                 all_stocks, threshold)
 
-            print(f"Primary Dividend Sources (ADI >= {threshold} USD):\n")
             print(
-                f"{'#': >3} | {'Stock (Yield)': <16} | {'Quantity': <10} | {'Div/Share': <17} | {'Annual Total': <15}")
+                f"Primary Dividend Sources (ADI >= {threshold} {source_currency}):\n")
+            print(
+                f"{'#': >3} | {'Stock (Yield)': <16} | {'Quantity': <10} | {'Div/Share': <17} | {f'Annual Total ({source_currency})': <15}")
             print("-" * 90)
 
             if not filtered_stocks:
@@ -325,12 +447,12 @@ def main():
                 for idx, stock in enumerate(filtered_stocks):
                     stock_yield_str = f"{stock['ticker']} ({stock['yield']:.2f}%)"
                     print(f"{(idx+1): >2}: | {stock_yield_str: <16} | {stock['quantity']: >10.2f} | "
-                          f"{stock['annual_dividend_per_share']: >9.2f} $/share | "
-                          f"{stock['annual_revenue']: >12.2f} $")
+                          f"{stock['annual_dividend_per_share']: >9.2f} /share | "
+                          f"{stock['annual_revenue']: >12.2f}")
 
             print("-" * 90)
             print(
-                f"Total ADI from Primary Sources: {total_adi_filtered: >41.2f} $")
+                f"Total ADI from Primary Sources: {total_adi_filtered: >41.2f} {source_currency}")
             print("-" * 90)
 
     if args.wishlist or run_all:
