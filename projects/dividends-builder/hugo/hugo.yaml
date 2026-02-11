@@ -1,3 +1,7 @@
-baseURL: https://example.org/
+baseURL: "/"
 languageCode: en-us
-title: My New Hugo Site
+title: Dividends Builder
+
+# GitHub Pages friendly defaults (works when hosted under /<repo>/ too)
+relativeURLs: true
+canonifyURLs: true
