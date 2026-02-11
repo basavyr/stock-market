@@ -1,0 +1,14 @@
+# Hugo build output
+hugo/public/
+hugo/.hugo_build.lock
+
+# Local config
+.env
+
+# Local/private data (never commit)
+export.json
+hugo/data/meta.json
+hugo/data/*/portfolio.json
+
+# Python
+__pycache__/
