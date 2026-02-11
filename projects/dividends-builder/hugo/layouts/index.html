@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <!-- Importing a tech/cyberpunk font -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --font-body: 'Rajdhani', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+            --radius: 4px;
+        }
+
+        :root,
+        :root[data-theme="dark"] {
+            --bg-color: #050a08;
+            --card-bg: rgba(11, 20, 16, 0.85);
+            --border-color: #1a2e26;
+            --text-main: #c4d4c9;
+            --text-muted: #6e8578;
+            --text-strong: #ffffff;
+            --accent-green: #00ff9d;
+            --accent-green-rgb: 0, 255, 157;
+            --accent-green-dim: rgba(0, 255, 157, 0.1);
+            --accent-yellow: #fce83a;
+            --accent-red: #ff3864;
+            --accent-red-dim: rgba(255, 56, 100, 0.22);
+            --glow: 0 0 10px rgba(0, 255, 157, 0.2);
+            --btn-active-text: #000;
+            --row-hover-bg: rgba(0, 255, 157, 0.05);
+            --row-hover-text: #ffffff;
+            --row-owned-bg: rgba(0, 255, 157, 0.02);
+            --row-partial-bg: rgba(252, 232, 58, 0.02);
+            --row-missing-bg: rgba(255, 56, 100, 0.05);
+            --total-row-bg: rgba(0, 255, 157, 0.05);
+            --canvas-trail: rgba(5, 10, 8, 0.2);
+            --canvas-lines: rgba(0, 255, 157, 0.05);
+            --canvas-glow-0: rgba(0, 255, 157, 0.05);
+            --canvas-glow-1: rgba(0, 0, 0, 0);
+        }
+
+        :root[data-theme="light"] {
+            --bg-color: #eef4f0;
+            --card-bg: rgba(250, 253, 251, 0.76);
+            --border-color: rgba(9, 31, 24, 0.18);
+            --text-main: #10261f;
+            --text-muted: #5b756a;
+            --text-strong: #061712;
+            --accent-green: #00b67a;
+            --accent-green-rgb: 0, 182, 122;
+            --accent-green-dim: rgba(0, 182, 122, 0.12);
+            --accent-yellow: #b88900;
+            --accent-red: #d44a64;
+            --accent-red-dim: rgba(212, 74, 100, 0.18);
+            --glow: 0 0 8px rgba(0, 182, 122, 0.12);
+            --btn-active-text: #061712;
+            --row-hover-bg: rgba(0, 182, 122, 0.07);
+            --row-hover-text: #061712;
+            --row-owned-bg: rgba(0, 182, 122, 0.06);
+            --row-partial-bg: rgba(184, 137, 0, 0.06);
+            --row-missing-bg: rgba(212, 74, 100, 0.06);
+            --total-row-bg: rgba(0, 182, 122, 0.08);
+            --canvas-trail: rgba(238, 244, 240, 0.35);
+            --canvas-lines: rgba(6, 30, 22, 0.08);
+            --canvas-glow-0: rgba(0, 182, 122, 0.08);
+            --canvas-glow-1: rgba(238, 244, 240, 0);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: transparent;
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--accent-green);
+            margin-bottom: 1.5rem;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--glow);
+        }
+
+        h1 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        :root[data-theme="light"] .card {
+            box-shadow: 0 12px 28px rgba(6, 23, 18, 0.08);
+        }
+
+        /* Decorative corner accent */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+            opacity: 0.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1rem;
+        }
+
+        th {
+            background-color: rgba(11, 20, 16, 0.95);
+            font-family: var(--font-mono);
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--accent-green);
+        }
+
+        :root[data-theme="light"] th {
+            background-color: rgba(250, 253, 251, 0.92);
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 1.8rem;
+        }
+
+        th.sortable:hover {
+            background-color: var(--row-hover-bg);
+        }
+
+        th.sortable .sort-indicator {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            letter-spacing: 0;
+        }
+
+        tr:hover td {
+            background-color: var(--row-hover-bg);
+            color: var(--row-hover-text);
+        }
+
+        .numeric {
+            text-align: right;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.8em;
+            font-size: 0.75rem;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 2px;
+            margin-left: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: var(--font-mono);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .badge-owned {
+            background-color: var(--accent-green-dim);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            box-shadow: 0 0 5px var(--accent-green-dim);
+        }
+
+        .badge-partial {
+            background-color: rgba(252, 232, 58, 0.1);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+            box-shadow: 0 0 5px rgba(252, 232, 58, 0.1);
+        }
+
+        .badge-missing {
+            background-color: var(--accent-red-dim);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red-dim);
+            font-weight: 800;
+        }
+
+        .row-owned {
+            background-color: var(--row-owned-bg);
+        }
+
+        .row-partial {
+            background-color: var(--row-partial-bg);
+        }
+
+        .row-missing {
+            background-color: var(--row-missing-bg);
+        }
+
+        .text-green {
+            color: var(--accent-green);
+            text-shadow: 0 0 5px var(--accent-green-dim);
+        }
+
+        .text-red {
+            color: var(--accent-red);
+            text-shadow: 0 0 5px var(--accent-red-dim);
+        }
+
+        .text-accent {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .stock-symbol {
+            color: var(--text-strong);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-green);
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            margin-right: 0.8rem;
+            transform: rotate(45deg);
+        }
+
+        .dot-owned {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .dot-partial {
+            background-color: var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow);
+        }
+
+        .dot-missing {
+            background-color: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        /* Search Input */
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        #stock-search {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(11, 20, 16, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        :root[data-theme="light"] #stock-search {
+            background: rgba(250, 253, 251, 0.7);
+            color: var(--text-strong);
+        }
+
+        #stock-search:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+            background: rgba(11, 20, 16, 0.9);
+        }
+
+        :root[data-theme="light"] #stock-search:focus {
+            box-shadow: 0 0 0 1px rgba(6, 23, 18, 0.16), 0 16px 24px rgba(var(--accent-green-rgb), 0.14);
+            background: rgba(250, 253, 251, 0.92);
+        }
+
+        #stock-search::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Collapsible Section Styles */
+        .collapse-btn {
+            background: none;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border-radius: 3px;
+        }
+
+        .collapse-btn:hover {
+            box-shadow: 0 0 8px rgba(0, 255, 157, 0.4);
+            background: rgba(0, 255, 157, 0.1);
+        }
+
+        .collapse-btn.collapsed-state {
+            color: var(--text-muted);
+            border-color: var(--text-muted);
+        }
+
+        .collapsible-content {
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+            max-height: 2000px;
+            /* Arbitrary large value for expansion */
+            opacity: 1;
+            overflow: hidden;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        /* Source Selection Buttons */
+        .source-btn {
+            background: rgba(var(--accent-green-rgb), 0.06);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            border-radius: var(--radius);
+        }
+
+        .source-btn:hover:not(.disabled) {
+            background: rgba(var(--accent-green-rgb), 0.18);
+            box-shadow: 0 0 10px rgba(var(--accent-green-rgb), 0.22);
+        }
+
+        .source-btn.active {
+            background: var(--accent-green);
+            color: var(--btn-active-text);
+            box-shadow: 0 0 15px rgba(var(--accent-green-rgb), 0.35);
+        }
+
+        :root[data-theme="light"] .source-btn.active {
+            box-shadow: 0 0 0 1px rgba(6, 23, 18, 0.16), 0 12px 20px rgba(0, 182, 122, 0.10);
+        }
+
+        .source-btn.disabled {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .source-btn.utility {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            background: rgba(11, 20, 16, 0.35);
+        }
+
+        :root[data-theme="light"] .source-btn.utility {
+            background: rgba(250, 253, 251, 0.55);
+        }
+
+        .source-btn.utility:hover {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+            background: rgba(252, 232, 58, 0.06);
+            box-shadow: 0 0 10px rgba(252, 232, 58, 0.08);
+        }
+
+        :root[data-theme="light"] .source-btn.utility:hover {
+            background: rgba(184, 137, 0, 0.08);
+            box-shadow: 0 0 0 1px rgba(184, 137, 0, 0.20), 0 12px 20px rgba(184, 137, 0, 0.10);
+        }
+
+        .target-input {
+            width: 10.5rem;
+            max-width: 100%;
+            padding: 0.45rem 0.65rem;
+            background: rgba(11, 20, 16, 0.55);
+            border: 1px solid var(--border-color);
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            border-radius: var(--radius);
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+
+        .target-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.9;
+        }
+
+        :root[data-theme="light"] .target-input {
+            background: rgba(250, 253, 251, 0.9);
+            border-color: rgba(9, 31, 24, 0.22);
+            box-shadow: 0 0 0 1px rgba(6, 23, 18, 0.08), 0 10px 18px rgba(6, 23, 18, 0.06);
+        }
+
+        .target-input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(0, 255, 157, 0.18);
+            background: rgba(11, 20, 16, 0.85);
+        }
+
+        :root[data-theme="light"] .target-input:focus {
+            background: rgba(250, 253, 251, 0.98);
+            box-shadow: 0 0 0 1px rgba(0, 182, 122, 0.30), 0 10px 18px rgba(0, 182, 122, 0.12);
+        }
+
+        .cell-muted {
+            color: var(--text-muted);
+        }
+
+        .portfolio-source {
+            display: none;
+        }
+
+        .portfolio-source.active {
+            display: block;
+        }
+
+        .notice-box {
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-yellow);
+            background: rgba(11, 20, 16, 0.6);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+            line-height: 1.6;
+        }
+
+        :root[data-theme="light"] .notice-box {
+            background: rgba(250, 253, 251, 0.78);
+            border-left-color: rgba(184, 137, 0, 0.85);
+            box-shadow: 0 12px 24px rgba(6, 23, 18, 0.06);
+        }
+
+        .notice-box strong {
+            color: var(--accent-yellow);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <h1>Dividends Builder <span
+                style="font-size: 0.6em; vertical-align: bottom; color: var(--text-muted); letter-spacing: 2px; margin-left: 10px;">//
+                SYSTEM_DASHBOARD_V2.0</span></h1>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item"><span class="legend-dot dot-owned"></span> OWNED_TARGET_MET</div>
+            <div class="legend-item"><span class="legend-dot dot-partial"></span> PARTIAL_ACQUISITION</div>
+            <div class="legend-item"><span class="legend-dot dot-missing"></span> MISSING_ASSET</div>
+            <div class="legend-item"
+                style="color: var(--text-muted); margin-left: auto; border-left: 1px solid var(--border-color); padding-left: 1rem;">
+                ADI = ANNUAL DIVIDEND INCOME</div>
+            <div class="legend-item" id="data-updated"
+                style="color: var(--text-muted); border-left: 1px solid var(--border-color); padding-left: 1rem;">
+                DATA_UPDATED: —</div>
+        </div>
+
+        <!-- Source Selection Controls -->
+        <div class="source-controls" style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+            <button type="button" class="source-btn active" data-source="ibkr" onclick="setActiveSource('ibkr', this)">[INTERACTIVE
+                BROKERS]</button>
+            <button type="button" class="source-btn" data-source="tradeville" onclick="setActiveSource('tradeville', this)">[TRADEVILLE]</button>
+            <button type="button" class="source-btn disabled" disabled>[XTB]</button>
+            <button type="button" class="source-btn utility" onclick="resetTargets()">[RESET_TARGETS]</button>
+            <input type="file" id="export-upload-input" accept="application/json" style="display: none;" aria-hidden="true">
+            <button type="button" class="source-btn utility" onclick="triggerExportUpload()">[UPLOAD_EXPORT]</button>
+            <button type="button" class="source-btn utility" onclick="clearExportData()">[CLEAR_DATA]</button>
+            <button type="button" class="source-btn utility" id="theme-toggle" onclick="toggleTheme()" style="margin-left: auto;">[THEME: DARK]</button>
+            <!-- Auto button removed as requested -->
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="stock-search" placeholder="Search Portfolio by Stock Symbol...">
+        </div>
+
+        <div class="card">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Portfolio Summary</span>
+                <button class="collapse-btn" onclick="toggleSection('portfolio-content', this)"
+                    aria-expanded="true">[-]</button>
+            </h2>
+            <div id="portfolio-content" class="collapsible-content expanded">
+                <div id="portfolio-source-ibkr" class="portfolio-source active">
+                    <table id="portfolio-table-ibkr">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort-key="symbol">Symbol <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="quantity">Quantity <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="yield">Fwd<br>Yield<br>(%) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="div">Div/Share<br>(<span id="header-currency-ibkr">USD</span>) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="revenue">Annual<br>Revenue<br>(<span id="header-currency-ibkr-rev">USD</span>) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="target">Target<br>ADI/Yr <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="delta">Delta<br>Shares <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="buy">Required<br>Buy <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="cost">Est.<br>Cost <span class="sort-indicator"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-tbody-ibkr">
+                            <tr id="portfolio-nodata-ibkr">
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    <strong style="font-size: 1.1rem;">NO_DATA: Upload <span style="color: var(--accent-green)">export.json</span> to load IBKR</strong>
+                                    <div style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
+                                        Generate locally: <span style="color: var(--accent-green)">python3 projects/dividends-builder/generate.py</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="background-color: var(--total-row-bg);" id="portfolio-total-row-ibkr" class="hidden">
+                                <td colspan="4" style="text-align: right; color: var(--text-muted); font-family: var(--font-mono);">
+                                    Total Annual Dividend Income:</td>
+                                <td class="numeric text-accent" style="font-size: 1.2rem;" id="portfolio-total-current-ibkr">—</td>
+                                <td colspan="2" class="numeric" style="text-align: right; color: var(--text-muted); font-family: var(--font-mono);">
+                                    Projected ADI:</td>
+                                <td colspan="2" class="numeric text-accent cell-muted" style="font-size: 1.2rem;" id="portfolio-total-projected-ibkr">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="portfolio-source-tradeville" class="portfolio-source">
+                    <table id="portfolio-table-tradeville">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort-key="symbol">Symbol <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="quantity">Quantity <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="yield">Fwd<br>Yield<br>(%) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="div">Div/Share<br>(<span id="header-currency-tradeville">RON</span>) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="revenue">Annual<br>Revenue<br>(<span id="header-currency-tradeville-rev">RON</span>) <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="target">Target<br>ADI/Yr <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="delta">Delta<br>Shares <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="buy">Required<br>Buy <span class="sort-indicator"></span></th>
+                                <th class="numeric sortable" data-sort-key="cost">Est.<br>Cost <span class="sort-indicator"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-tbody-tradeville">
+                            <tr id="portfolio-nodata-tradeville">
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    <strong style="font-size: 1.1rem;">NO_DATA: Upload <span style="color: var(--accent-green)">export.json</span> to load TRADEVILLE</strong>
+                                    <div style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
+                                        Generate locally: <span style="color: var(--accent-green)">python3 projects/dividends-builder/generate.py</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="background-color: var(--total-row-bg);" id="portfolio-total-row-tradeville" class="hidden">
+                                <td colspan="4" style="text-align: right; color: var(--text-muted); font-family: var(--font-mono);">
+                                    Total Annual Dividend Income:</td>
+                                <td class="numeric text-accent" style="font-size: 1.2rem;" id="portfolio-total-current-tradeville">—</td>
+                                <td colspan="2" class="numeric" style="text-align: right; color: var(--text-muted); font-family: var(--font-mono);">
+                                    Projected ADI:</td>
+                                <td colspan="2" class="numeric text-accent cell-muted" style="font-size: 1.2rem;" id="portfolio-total-projected-tradeville">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Wishlist / Gap Analysis</span>
+                <button class="collapse-btn" onclick="toggleSection('wishlist-content', this)"
+                    aria-expanded="true">[-]</button>
+            </h2>
+            <div id="wishlist-content" class="collapsible-content expanded">
+                <div class="notice-box">
+                    <strong>WISHLIST_MODULE:</strong> COMING_SOON
+                    <br>
+                    This dashboard is currently focused on portfolio ADI tracking for IBKR and Tradeville.
+                    The wishlist/gap analysis will return in a future update.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive Background Logic
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let mouse = { x: -1000, y: -1000 }; // Initialize off-screen so no dots are visible initially
+
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+                this.alpha = Math.random();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+
+                // Mouse interaction
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 200) { // Increased radius slightly for better effect
+                    this.alpha = 1 - dist / 200;
+                } else {
+                    this.alpha = 0; // Completely invisible when not illuminated
+                }
+            }
+
+            draw() {
+                const rgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-green-rgb').trim() || '0, 255, 157';
+                ctx.fillStyle = `rgba(${rgb}, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+
+        // Polygon Background
+        let angle = 0;
+        function drawPolygons() {
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(angle);
+            const lines = getComputedStyle(document.documentElement).getPropertyValue('--canvas-lines').trim() || 'rgba(0, 255, 157, 0.05)';
+            ctx.strokeStyle = lines;
+            ctx.lineWidth = 2;
+
+            for (let i = 1; i <= 3; i++) {
+                ctx.beginPath();
+                const size = 300 * i;
+                for (let j = 0; j < 6; j++) {
+                    const a = (Math.PI / 3) * j;
+                    ctx.lineTo(Math.cos(a) * size, Math.sin(a) * size);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            ctx.restore();
+            angle += 0.0005;
+        }
+
+        function animate() {
+            // Dark bg with trail
+            const trail = getComputedStyle(document.documentElement).getPropertyValue('--canvas-trail').trim() || 'rgba(5, 10, 8, 0.2)';
+            ctx.fillStyle = trail;
+            ctx.fillRect(0, 0, width, height);
+
+            // Mouse highlight (radial gradient)
+            const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 300);
+            const g0 = getComputedStyle(document.documentElement).getPropertyValue('--canvas-glow-0').trim() || 'rgba(0, 255, 157, 0.05)';
+            const g1 = getComputedStyle(document.documentElement).getPropertyValue('--canvas-glow-1').trim() || 'rgba(0, 0, 0, 0)';
+            gradient.addColorStop(0, g0);
+            gradient.addColorStop(1, g1);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            drawPolygons();
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Search Functionality
+        const searchInput = document.getElementById('stock-search');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                const query = this.value.toUpperCase();
+                const activeSource = document.querySelector('.portfolio-source.active');
+                const table = activeSource ? activeSource.querySelector('table') : null;
+                if (!table) return;
+
+                const rows = table.getElementsByTagName('tr');
+
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    // Skip header and total rows
+                    if (row.getElementsByTagName('th').length > 0) continue;
+                    if (row.id && row.id.indexOf('portfolio-total-row') === 0) continue;
+                    if (row.id && row.id.indexOf('portfolio-nodata-') === 0) {
+                        row.style.display = query ? 'none' : '';
+                        continue;
+                    }
+
+                    const symbolCell = row.querySelector('.stock-symbol');
+                    if (symbolCell) {
+                        const symbol = symbolCell.textContent.trim();
+                        if (symbol.toUpperCase().indexOf(query) > -1) {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = "none";
+                        }
+                    }
+                }
+            });
+        }
+
+        // Collapsible Sections
+        function toggleSection(contentId, btn) {
+            const content = document.getElementById(contentId);
+            if (!content) return;
+
+            if (content.classList.contains('expanded')) {
+                // Collapse
+                content.classList.remove('expanded');
+                content.classList.add('collapsed');
+                btn.textContent = '[+]';
+                btn.setAttribute('aria-expanded', 'false');
+                btn.classList.add('collapsed-state');
+            } else {
+                // Expand
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                btn.textContent = '[-]';
+                btn.setAttribute('aria-expanded', 'true');
+                btn.classList.remove('collapsed-state');
+            }
+        }
+
+        const TARGETS_PREFIX = 'dividends_builder.targets.';
+        const THEME_KEY = 'dividends_builder.theme';
+        const EXPORT_KEY = 'dividends_builder.export';
+        let ACTIVE_SOURCE = 'ibkr';
+
+        function getTheme() {
+            const t = localStorage.getItem(THEME_KEY);
+            return (t === 'light' || t === 'dark') ? t : 'dark';
+        }
+
+        function setTheme(theme) {
+            const t = (theme === 'light') ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem(THEME_KEY, t);
+            const btn = document.getElementById('theme-toggle');
+            if (btn) btn.textContent = (t === 'light') ? '[THEME: LIGHT]' : '[THEME: DARK]';
+        }
+
+        function toggleTheme() {
+            setTheme(getTheme() === 'light' ? 'dark' : 'light');
+        }
+
+        function triggerExportUpload() {
+            const input = document.getElementById('export-upload-input');
+            if (!input) return;
+            // Allow re-upload of the same file.
+            input.value = '';
+            input.click();
+        }
+
+        function clearExportData() {
+            localStorage.removeItem(EXPORT_KEY);
+            renderFromExport(null);
+        }
+
+        function loadExportFromStorage() {
+            try {
+                const raw = localStorage.getItem(EXPORT_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function saveExportToStorage(obj) {
+            localStorage.setItem(EXPORT_KEY, JSON.stringify(obj));
+        }
+
+        function getCurrencyLabel(iso) {
+            const c = String(iso || '').toUpperCase();
+            if (c === 'USD') return '$';
+            if (c === 'RON') return 'RON';
+            return c || '—';
+        }
+
+        function formatQty(source, qty) {
+            if (!Number.isFinite(qty)) return '—';
+            if (source === 'tradeville') return String(Math.round(qty));
+            // IBKR: up to 4 decimals, trim trailing zeros.
+            return (Math.round(qty * 10000) / 10000).toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+        }
+
+        function updateHeadersCurrency(source, iso) {
+            const label = getCurrencyLabel(iso);
+            const a = document.getElementById('header-currency-' + source);
+            const b = document.getElementById('header-currency-' + source + '-rev');
+            if (a) a.textContent = label;
+            if (b) b.textContent = label;
+        }
+
+        function setDataUpdated(text) {
+            const el = document.getElementById('data-updated');
+            if (!el) return;
+            el.textContent = 'DATA_UPDATED: ' + (text || '—');
+        }
+
+        function clearPortfolioRows(tbody) {
+            if (!tbody) return;
+            Array.from(tbody.querySelectorAll('tr.portfolio-row')).forEach(tr => tr.remove());
+        }
+
+        function setTotalsVisibility(source, visible) {
+            const totalRow = document.getElementById('portfolio-total-row-' + source);
+            if (totalRow) totalRow.classList.toggle('hidden', !visible);
+        }
+
+        function setNoDataVisibility(source, visible) {
+            const row = document.getElementById('portfolio-nodata-' + source);
+            if (row) row.classList.toggle('hidden', !visible);
+        }
+
+        function setCurrentTotal(source, text) {
+            const el = document.getElementById('portfolio-total-current-' + source);
+            if (el) el.textContent = text || '—';
+        }
+
+        function renderPortfolio(source, rows) {
+            const tbody = document.getElementById('portfolio-tbody-' + source);
+            if (!tbody) return;
+
+            clearPortfolioRows(tbody);
+
+            const safeRows = Array.isArray(rows) ? rows : [];
+            if (!safeRows.length) {
+                setNoDataVisibility(source, true);
+                setTotalsVisibility(source, false);
+                setCurrentTotal(source, '—');
+                const projected = document.getElementById('portfolio-total-projected-' + source);
+                if (projected) {
+                    projected.textContent = '—';
+                    projected.classList.add('cell-muted');
+                }
+                updateHeadersCurrency(source, source === 'tradeville' ? 'RON' : 'USD');
+                return;
+            }
+
+            const iso = String(safeRows[0].currency || (source === 'tradeville' ? 'RON' : 'USD')).toUpperCase();
+            updateHeadersCurrency(source, iso);
+
+            setNoDataVisibility(source, false);
+            setTotalsVisibility(source, true);
+
+            let total = 0;
+            safeRows.forEach(r => {
+                const ticker = String(r.ticker || '').trim();
+                if (!ticker) return;
+
+                const qty = Number(r.quantity);
+                const yld = Number(r.yield);
+                const div = Number(r.annual_dividend_per_share);
+                const price = Number(r.current_price);
+                const revenue = Number(r.annual_revenue);
+                const rowCurrency = String(r.currency || iso).toUpperCase();
+
+                if (Number.isFinite(revenue)) total += revenue;
+
+                const tr = document.createElement('tr');
+                tr.className = 'portfolio-row';
+                tr.dataset.source = source;
+                tr.dataset.ticker = ticker;
+                tr.dataset.quantity = Number.isFinite(qty) ? String(qty) : '0';
+                tr.dataset.div = Number.isFinite(div) ? String(div) : '0';
+                tr.dataset.price = Number.isFinite(price) ? String(price) : '';
+                tr.dataset.currency = rowCurrency;
+
+                tr.innerHTML = `
+                    <td class="stock-symbol" style="font-weight: 600; letter-spacing: 1px;">${ticker}</td>
+                    <td class="numeric" style="color: var(--text-muted);">${formatQty(source, qty)}</td>
+                    <td class="numeric">${Number.isFinite(yld) ? (Math.round(yld * 100) / 100).toFixed(2) : '0.00'}%</td>
+                    <td class="numeric" style="color: var(--text-muted);">${formatMoney(Number.isFinite(div) ? div : 0, rowCurrency)}</td>
+                    <td class="numeric"><strong class="text-accent">${formatMoney(Number.isFinite(revenue) ? revenue : 0, rowCurrency)}</strong></td>
+                    <td class="numeric">
+                        <input class="target-input" inputmode="decimal" type="number" min="0" step="0.01" placeholder="set target" aria-label="Target annual dividend income">
+                    </td>
+                    <td class="numeric cell-muted target-delta">—</td>
+                    <td class="numeric cell-muted target-buy">—</td>
+                    <td class="numeric cell-muted target-cost">—</td>
+                `;
+
+                // Insert before totals row so totals stay last.
+                const totalRow = document.getElementById('portfolio-total-row-' + source);
+                tbody.insertBefore(tr, totalRow || null);
+            });
+
+            setCurrentTotal(source, formatMoney(total, iso));
+        }
+
+        function renderFromExport(exportObj) {
+            if (!exportObj || typeof exportObj !== 'object') {
+                setDataUpdated('—');
+                renderPortfolio('ibkr', []);
+                renderPortfolio('tradeville', []);
+                refreshPlanner(ACTIVE_SOURCE);
+                return;
+            }
+
+            const updatedText = exportObj.generated_at_human || exportObj.generated_at || '—';
+            setDataUpdated(updatedText);
+
+            const sources = exportObj.sources || {};
+            renderPortfolio('ibkr', (sources.ibkr && sources.ibkr.portfolio) || []);
+            renderPortfolio('tradeville', (sources.tradeville && sources.tradeville.portfolio) || []);
+
+            initTargetPlanner();
+            refreshPlanner(ACTIVE_SOURCE);
+        }
+
+        function initExportUpload() {
+            const input = document.getElementById('export-upload-input');
+            if (!input) return;
+            input.addEventListener('change', () => {
+                const file = input.files && input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const obj = JSON.parse(String(reader.result || ''));
+                        saveExportToStorage(obj);
+                        renderFromExport(obj);
+                    } catch (e) {
+                        console.error('Failed to parse export.json', e);
+                        alert('Invalid export.json (failed to parse).');
+                    }
+                };
+                reader.onerror = () => {
+                    alert('Failed to read file.');
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function storageKey(source) {
+            return TARGETS_PREFIX + source;
+        }
+
+        function loadTargets(source) {
+            try {
+                const raw = localStorage.getItem(storageKey(source));
+                return raw ? JSON.parse(raw) : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveTargets(source, targets) {
+            localStorage.setItem(storageKey(source), JSON.stringify(targets));
+        }
+
+        function clearTargets(source) {
+            localStorage.removeItem(storageKey(source));
+        }
+
+        function formatMoney(amount, currency) {
+            if (!Number.isFinite(amount)) return 'N/A';
+            const v = amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (currency === 'USD') return '$' + v;
+            if (currency === 'RON') return v + ' RON';
+            return v + ' ' + currency;
+        }
+
+        function roundShares(source, shares) {
+            if (!Number.isFinite(shares)) return shares;
+            if (source === 'tradeville') {
+                // integer-only shares
+                return Math.ceil(shares - 1e-12);
+            }
+            // IBKR fractional shares are supported
+            return Math.round(shares * 10000) / 10000;
+        }
+
+        function updateProjectedTotal(source) {
+            const rows = document.querySelectorAll('tr.portfolio-row[data-source="' + source + '"]');
+            const targets = loadTargets(source);
+            let projected = 0;
+            let hasAnyTarget = false;
+            let currency = '';
+
+            rows.forEach(row => {
+                const ticker = row.dataset.ticker;
+                const qty = Number(row.dataset.quantity || '0');
+                const div = Number(row.dataset.div || '0');
+                const rowCurrency = (row.dataset.currency || '').toUpperCase();
+                if (!currency && rowCurrency) currency = rowCurrency;
+
+                const targetVal = targets[ticker];
+                const hasTarget = targetVal !== undefined && targetVal !== null && targetVal !== '' && Number.isFinite(Number(targetVal));
+
+                if (hasTarget) {
+                    hasAnyTarget = true;
+                    projected += Number(targetVal);
+                } else {
+                    if (Number.isFinite(qty) && Number.isFinite(div)) {
+                        projected += qty * div;
+                    }
+                }
+            });
+
+            const out = document.getElementById('portfolio-total-projected-' + source);
+            if (!out) return;
+
+            if (!hasAnyTarget) {
+                out.textContent = '—';
+                out.classList.add('cell-muted');
+                return;
+            }
+
+            out.textContent = formatMoney(projected, currency);
+            out.classList.remove('cell-muted');
+        }
+
+        const SORT_STATE = {
+            ibkr: { key: null, dir: 'desc' },
+            tradeville: { key: null, dir: 'desc' },
+        };
+
+        function parseCellNumber(text) {
+            if (text === null || text === undefined) return NaN;
+            const s = String(text).trim();
+            if (!s || s === '—' || s === 'N/A') return NaN;
+            const cleaned = s.replace(/,/g, '').replace(/[^0-9.+-]/g, '');
+            const n = Number(cleaned);
+            return Number.isFinite(n) ? n : NaN;
+        }
+
+        function getRowSortValue(row, key) {
+            if (!row) return null;
+
+            if (key === 'symbol') {
+                const c = row.querySelector('.stock-symbol');
+                return (c ? c.textContent : '').trim().toUpperCase();
+            }
+
+            if (key === 'quantity') return Number(row.dataset.quantity || '0');
+            if (key === 'div') return Number(row.dataset.div || '0');
+            if (key === 'price') return Number(row.dataset.price || '');
+
+            if (key === 'yield') {
+                const cell = row.querySelector('td:nth-child(3)');
+                return parseCellNumber(cell ? cell.textContent : '');
+            }
+
+            if (key === 'revenue') {
+                const cell = row.querySelector('td:nth-child(5)');
+                return parseCellNumber(cell ? cell.textContent : '');
+            }
+
+            if (key === 'target') {
+                const input = row.querySelector('.target-input');
+                return parseCellNumber(input ? input.value : '');
+            }
+
+            if (key === 'delta') {
+                const cell = row.querySelector('.target-delta');
+                return parseCellNumber(cell ? cell.textContent : '');
+            }
+
+            if (key === 'buy') {
+                const cell = row.querySelector('.target-buy');
+                return parseCellNumber(cell ? cell.textContent : '');
+            }
+
+            if (key === 'cost') {
+                const cell = row.querySelector('.target-cost');
+                return parseCellNumber(cell ? cell.textContent : '');
+            }
+
+            return null;
+        }
+
+        function compareValues(a, b, dir) {
+            const asc = dir === 'asc';
+
+            const aNaN = (typeof a === 'number') && !Number.isFinite(a);
+            const bNaN = (typeof b === 'number') && !Number.isFinite(b);
+            if (aNaN && bNaN) return 0;
+            if (aNaN) return 1;
+            if (bNaN) return -1;
+
+            if (typeof a === 'string' && typeof b === 'string') {
+                if (a < b) return asc ? -1 : 1;
+                if (a > b) return asc ? 1 : -1;
+                return 0;
+            }
+
+            const an = Number(a);
+            const bn = Number(b);
+            if (an < bn) return asc ? -1 : 1;
+            if (an > bn) return asc ? 1 : -1;
+            return 0;
+        }
+
+        function updateSortIndicators(table, activeKey, dir) {
+            if (!table) return;
+            table.querySelectorAll('th.sortable').forEach(th => {
+                const key = th.dataset.sortKey;
+                const ind = th.querySelector('.sort-indicator');
+                if (!ind) return;
+                if (key !== activeKey) {
+                    ind.textContent = '';
+                    return;
+                }
+                ind.textContent = (dir === 'asc') ? '↑' : '↓';
+            });
+        }
+
+        function sortPortfolioTable(source, key) {
+            const table = document.getElementById('portfolio-table-' + source);
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            const state = SORT_STATE[source] || (SORT_STATE[source] = { key: null, dir: 'desc' });
+
+            if (state.key === key) {
+                state.dir = (state.dir === 'asc') ? 'desc' : 'asc';
+            } else {
+                state.key = key;
+                // Reasonable defaults: symbols asc, everything else desc.
+                state.dir = (key === 'symbol') ? 'asc' : 'desc';
+            }
+
+            const rows = Array.from(tbody.querySelectorAll('tr.portfolio-row[data-source="' + source + '"]'));
+            // Keep original order as stable tie-breaker.
+            rows.forEach((r, idx) => { if (!r.dataset.sortIndex) r.dataset.sortIndex = String(idx); });
+
+            rows.sort((ra, rb) => {
+                const va = getRowSortValue(ra, key);
+                const vb = getRowSortValue(rb, key);
+                let cmp = compareValues(va, vb, state.dir);
+                if (cmp !== 0) return cmp;
+                // Stable: fallback to original index.
+                return Number(ra.dataset.sortIndex) - Number(rb.dataset.sortIndex);
+            });
+
+            const totalRow = tbody.querySelector('tr[id^="portfolio-total-row-"]');
+            rows.forEach(r => tbody.appendChild(r));
+            if (totalRow) tbody.appendChild(totalRow);
+
+            updateSortIndicators(table, state.key, state.dir);
+        }
+
+        function initSorting() {
+            ['ibkr', 'tradeville'].forEach(source => {
+                const table = document.getElementById('portfolio-table-' + source);
+                if (!table) return;
+                table.querySelectorAll('th.sortable').forEach(th => {
+                    th.addEventListener('click', () => sortPortfolioTable(source, th.dataset.sortKey));
+                });
+            });
+        }
+
+        function setRowState(row, state) {
+            row.classList.remove('row-owned', 'row-partial', 'row-missing');
+            if (state) row.classList.add(state);
+        }
+
+        function updatePlannerRow(row) {
+            const source = row.dataset.source;
+            const ticker = row.dataset.ticker;
+
+            const parseNum = (v) => {
+                if (v === null || v === undefined) return NaN;
+                const s = String(v).trim().replace(/,/g, '').replace(/[^0-9.+-]/g, '');
+                const n = Number(s);
+                return Number.isFinite(n) ? n : NaN;
+            };
+
+            const qty = parseNum(row.dataset.quantity || '0');
+            const div = parseNum(row.dataset.div || '0');
+            const price = parseNum(row.dataset.price || '');
+            const currency = (row.dataset.currency || '').toUpperCase();
+
+            const input = row.querySelector('.target-input');
+            const cellDelta = row.querySelector('.target-delta');
+            const cellBuy = row.querySelector('.target-buy');
+            const cellCost = row.querySelector('.target-cost');
+
+            const targets = loadTargets(source);
+            const targetVal = targets[ticker];
+
+            if (input && (document.activeElement !== input)) {
+                input.value = (targetVal !== undefined && targetVal !== null) ? targetVal : '';
+            }
+
+            const hasTarget = targetVal !== undefined && targetVal !== null && targetVal !== '' && Number.isFinite(Number(targetVal));
+            if (!hasTarget) {
+                if (cellDelta) {
+                    cellDelta.textContent = '—';
+                    cellDelta.classList.remove('text-red', 'text-green');
+                    cellDelta.classList.add('cell-muted');
+                }
+                if (cellBuy) {
+                    cellBuy.textContent = '—';
+                    cellBuy.classList.remove('text-red', 'text-green');
+                    cellBuy.classList.add('cell-muted');
+                }
+                if (cellCost) {
+                    cellCost.textContent = '—';
+                    cellCost.classList.remove('text-red', 'text-green');
+                    cellCost.classList.add('cell-muted');
+                }
+                setRowState(row, null);
+                return;
+            }
+
+            const targetAdi = Number(targetVal);
+            if (!(div > 0)) {
+                if (cellDelta) cellDelta.textContent = 'N/A';
+                if (cellBuy) cellBuy.textContent = 'N/A';
+                if (cellCost) cellCost.textContent = 'N/A';
+                setRowState(row, 'row-missing');
+                return;
+            }
+
+            const targetShares = targetAdi / div;
+            const deltaShares = qty - targetShares;
+            const requiredBuyRaw = Math.max(0, targetShares - qty);
+            const requiredBuy = roundShares(source, requiredBuyRaw);
+            const hasPrice = Number.isFinite(price) && price > 0;
+            const estCost = hasPrice ? (requiredBuy * price) : NaN;
+
+            if (cellDelta) {
+                cellDelta.textContent = (Math.round(deltaShares * 100) / 100).toFixed(2);
+                cellDelta.classList.toggle('text-red', deltaShares < -0.01);
+                cellDelta.classList.toggle('text-green', deltaShares >= -0.01);
+                cellDelta.classList.remove('cell-muted');
+            }
+            if (cellBuy) {
+                if (source === 'tradeville') {
+                    cellBuy.textContent = String(requiredBuy);
+                } else {
+                    cellBuy.textContent = (Math.round(requiredBuy * 10000) / 10000).toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+                }
+                cellBuy.classList.remove('cell-muted');
+            }
+            if (cellCost) {
+                cellCost.textContent = hasPrice ? formatMoney(estCost, currency) : 'N/A';
+                cellCost.classList.remove('cell-muted');
+            }
+
+            if (requiredBuy <= 0) {
+                setRowState(row, 'row-owned');
+            } else if (qty > 0) {
+                setRowState(row, 'row-partial');
+            } else {
+                setRowState(row, 'row-missing');
+            }
+        }
+
+        function initTargetPlanner() {
+            document.querySelectorAll('tr.portfolio-row').forEach(row => {
+                const source = row.dataset.source;
+                const ticker = row.dataset.ticker;
+                const input = row.querySelector('.target-input');
+                if (!input) return;
+
+                input.addEventListener('input', () => {
+                    const raw = input.value.trim();
+                    const targets = loadTargets(source);
+                    if (!raw) {
+                        delete targets[ticker];
+                        saveTargets(source, targets);
+                        updatePlannerRow(row);
+                        updateProjectedTotal(source);
+                        return;
+                    }
+                    const v = Number(raw);
+                    if (!Number.isFinite(v) || v < 0) {
+                        return;
+                    }
+                    targets[ticker] = Math.round(v * 100) / 100;
+                    saveTargets(source, targets);
+                    updatePlannerRow(row);
+                    updateProjectedTotal(source);
+                });
+
+                updatePlannerRow(row);
+            });
+
+            updateProjectedTotal('ibkr');
+            updateProjectedTotal('tradeville');
+        }
+
+        function refreshPlanner(source) {
+            document.querySelectorAll('tr.portfolio-row[data-source="' + source + '"]').forEach(row => updatePlannerRow(row));
+            updateProjectedTotal(source);
+        }
+
+        function resetTargets() {
+            clearTargets(ACTIVE_SOURCE);
+            refreshPlanner(ACTIVE_SOURCE);
+        }
+
+        // Handle Source Selection (Static Toggle)
+        function setActiveSource(source, btnElement) {
+            ACTIVE_SOURCE = source;
+            // Update active state in UI
+            document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+
+            // Switch visible tables
+            document.querySelectorAll('.portfolio-source').forEach(s => s.classList.remove('active'));
+            const container = document.getElementById('portfolio-source-' + source);
+            if (container) container.classList.add('active');
+
+            // Reset search for clarity
+            const input = document.getElementById('stock-search');
+            if (input) {
+                input.value = '';
+                const evt = new Event('keyup');
+                input.dispatchEvent(evt);
+            }
+
+            refreshPlanner(source);
+        }
+
+        // Default source on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTheme(getTheme());
+            initSorting();
+            initExportUpload();
+            renderFromExport(loadExportFromStorage());
+            const btn = document.querySelector('.source-btn[data-source="ibkr"]');
+            setActiveSource('ibkr', btn);
+        });
+    </script>
+</body>
+
+</html>
