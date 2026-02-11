@@ -1,0 +1,59 @@
+name: Deploy Dividends Builder (Hugo) to Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - projects/dividends-builder/hugo/**
+      - .github/workflows/dividends-builder-pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.143.0'
+          extended: true
+
+      - name: Build site
+        env:
+          # Project Pages base URL: https://<owner>.github.io/<repo>/
+          PAGES_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          hugo \
+            --source projects/dividends-builder/hugo \
+            --destination public \
+            --baseURL "$PAGES_BASE_URL" \
+            --minify
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: projects/dividends-builder/hugo/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
