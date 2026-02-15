@@ -605,8 +605,9 @@ def allocate_cash_scored(
     whole_shares = _env_bool("WI_WHOLE_SHARES", default=False)
     min_order_usd = _safe_float(os.environ.get("WI_MIN_ORDER_USD"), default=25.0)
     price_tilt = _safe_float(os.environ.get("WI_PRICE_TILT"), default=0.20)
-    softmax_temp = _safe_float(os.environ.get("WI_SCORE_TEMPERATURE"), default=10.0)
-    max_new_alloc_pct = _safe_float(os.environ.get("WI_MAX_NEW_ALLOC_PCT"), default=0.40)
+    # Lower temp => more differentiation in allocation for small score gaps.
+    softmax_temp = _safe_float(os.environ.get("WI_SCORE_TEMPERATURE"), default=2.0)
+    max_new_alloc_pct = _safe_float(os.environ.get("WI_MAX_NEW_ALLOC_PCT"), default=0.80)
 
     post_total = float(holdings_total_value + investable_cash)
     denom = post_total if post_total > 0 else 1.0
@@ -659,6 +660,7 @@ def allocate_cash_scored(
     # Compute per-symbol max additional dollars allowed (position cap + per-name cap).
     alloc: Dict[str, float] = {sym: 0.0 for sym in wishlist}
     caps: Dict[str, float] = {}
+    cap_breakdown: Dict[str, Dict[str, Any]] = {}
     zero_reasons: Dict[str, str] = {}
     for sym in wishlist:
         cur_val = float(holding_values.get(sym, 0.0))
@@ -666,6 +668,11 @@ def allocate_cash_scored(
         max_add_pos = max(0.0, cap_val - cur_val)
         max_add = min(float(max_add_pos), float(per_name_new_alloc_cap))
         caps[sym] = float(max_add)
+        cap_breakdown[sym] = {
+            "position_cap_add_usd": None if cap_val == float("inf") else round(float(max_add_pos), 2),
+            "max_new_alloc_add_usd": None if per_name_new_alloc_cap == float("inf") else round(float(per_name_new_alloc_cap), 2),
+            "effective_cap_add_usd": None if max_add == float("inf") else round(float(max_add), 2),
+        }
         if max_add <= 0:
             zero_reasons[sym] = "position_cap"
 
@@ -683,6 +690,8 @@ def allocate_cash_scored(
     if min_order_usd > 0 and len(eligible_for_starter) * float(min_order_usd) > float(remaining) and eligible_for_starter:
         k = int(float(remaining) // float(min_order_usd))
         starter_targets = eligible_for_starter[: max(0, k)]
+
+    starter_set = set(starter_targets)
 
     for sym in starter_targets:
         if remaining < min_order_usd:
@@ -704,16 +713,74 @@ def allocate_cash_scored(
         return max(0.0, float(caps.get(sym, 0.0)) - float(alloc.get(sym, 0.0)))
 
     if remaining > 0 and included:
-        elig = [sym for sym in included if room(sym) > 0.01]
-        denom_w = sum(raw_w.get(sym, 0.0) for sym in elig) or 1.0
-        for sym in elig:
-            w = float(raw_w.get(sym, 0.0)) / float(denom_w)
-            add = min(float(remaining) * float(w), room(sym))
-            if add <= 0:
-                continue
-            alloc[sym] = float(alloc.get(sym, 0.0)) + float(add)
+        # Redistribute leftover with caps (water-filling).
+        guard = 0
+        while remaining > 0.01 and guard < 50:
+            guard += 1
+            elig = [sym for sym in included if room(sym) > 0.01]
+            if not elig:
+                break
 
-        remaining = max(0.0, float(investable_cash) - sum(alloc.values()))
+            denom_w = sum(raw_w.get(sym, 0.0) for sym in elig) or 1.0
+            proposed: Dict[str, float] = {}
+            for sym in elig:
+                w = float(raw_w.get(sym, 0.0)) / float(denom_w)
+                proposed[sym] = min(float(remaining) * float(w), room(sym))
+
+            step = sum(proposed.values())
+            if step <= 0.01:
+                break
+
+            for sym, add in proposed.items():
+                if add <= 0:
+                    continue
+                alloc[sym] = float(alloc.get(sym, 0.0)) + float(add)
+
+            remaining = max(0.0, float(investable_cash) - sum(alloc.values()))
+
+    # If a symbol has cap room but ended up at 0, we still try to place a minimal buy
+    # (unless we truly don't have enough cash for it).
+    if min_order_usd > 0:
+        for sym in wishlist:
+            if alloc.get(sym, 0.0) > 0:
+                continue
+            if caps.get(sym, 0.0) < min_order_usd:
+                continue
+            if remaining < min_order_usd:
+                break
+            p = _safe_float((quotes.get(sym) or {}).get("price"), default=0.0)
+            if p <= 0:
+                zero_reasons[sym] = "missing_price"
+                continue
+            alloc[sym] = float(min_order_usd)
+            remaining -= float(min_order_usd)
+
+    # Phase 3: re-run weighted top-up now that everyone is included.
+    included = [sym for sym in wishlist if alloc.get(sym, 0.0) > 0]
+    if remaining > 0 and included:
+        guard = 0
+        while remaining > 0.01 and guard < 50:
+            guard += 1
+            elig = [sym for sym in included if room(sym) > 0.01]
+            if not elig:
+                break
+
+            denom_w = sum(raw_w.get(sym, 0.0) for sym in elig) or 1.0
+            proposed: Dict[str, float] = {}
+            for sym in elig:
+                w = float(raw_w.get(sym, 0.0)) / float(denom_w)
+                proposed[sym] = min(float(remaining) * float(w), room(sym))
+
+            step = sum(proposed.values())
+            if step <= 0.01:
+                break
+
+            for sym, add in proposed.items():
+                if add <= 0:
+                    continue
+                alloc[sym] = float(alloc.get(sym, 0.0)) + float(add)
+
+            remaining = max(0.0, float(investable_cash) - sum(alloc.values()))
 
     # Optional whole-share rounding.
     leftover = max(0.0, float(investable_cash) - sum(alloc.values()))
@@ -761,6 +828,27 @@ def allocate_cash_scored(
             alloc[sym] = round(float(alloc[sym]), 2)
     leftover = round(max(0.0, float(investable_cash) - sum(alloc.values())), 2)
 
+    # Per-symbol allocation flags (helps explain outcomes in UI).
+    flags: Dict[str, Dict[str, Any]] = {}
+    eps = 0.02
+    for sym in wishlist:
+        a = float(alloc.get(sym, 0.0))
+        cap_pos = cap_breakdown.get(sym, {}).get("position_cap_add_usd")
+        cap_new = cap_breakdown.get(sym, {}).get("max_new_alloc_add_usd")
+        eff = cap_breakdown.get(sym, {}).get("effective_cap_add_usd")
+
+        capped_effective = (eff is not None) and (a > 0) and (a + eps >= float(eff))
+        capped_by_new = (cap_new is not None) and (a > 0) and (a + eps >= float(cap_new))
+        capped_by_pos = (cap_pos is not None) and (a > 0) and (a + eps >= float(cap_pos))
+
+        flags[sym] = {
+            "starter_min_order": bool(sym in starter_set and a > 0),
+            "capped_effective": bool(capped_effective),
+            "capped_by_max_new_alloc": bool(capped_by_new),
+            "capped_by_position_weight": bool(capped_by_pos),
+            "zero_reason": zero_reasons.get(sym),
+        }
+
     # Explain true-zero allocations.
     for sym in wishlist:
         if alloc.get(sym, 0.0) > 0:
@@ -780,6 +868,8 @@ def allocate_cash_scored(
         "max_new_alloc_pct": float(max_new_alloc_pct),
         "max_position_weight": float(max_w),
         "scores": {sym: s for (sym, _score, s) in scored},
+        "caps": cap_breakdown,
+        "flags": flags,
         "zero_reasons": zero_reasons,
         "unallocated_cash": round(float(leftover), 2),
     }
@@ -940,6 +1030,14 @@ def generate_report(
             score_components = score_obj.get("components")
             score_notes = score_obj.get("notes")
 
+        alloc_flags = None
+        alloc_reason = None
+        if isinstance(alloc_meta, dict):
+            flags = (alloc_meta.get("flags") or {}).get(sym)
+            if isinstance(flags, dict):
+                alloc_flags = flags
+                alloc_reason = flags.get("zero_reason")
+
         recommendations.append(
             {
                 "symbol": sym,
@@ -955,6 +1053,8 @@ def generate_report(
                 "current_weight": round(cur_weight, 6),
                 "recommended_amount": round(rec_amount, 2),
                 "recommended_shares_est": rec_shares,
+                "allocation_flags": alloc_flags,
+                "allocation_reason": alloc_reason,
                 "why": why,
                 "keep_in_mind": keep,
                 "fundamentals": {
