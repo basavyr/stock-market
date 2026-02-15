@@ -1,2 +1,16 @@
 projects/dividends-builder/.python-version
 projects/dividends-builder/wishlist.csv
+
+# Local tooling
+.github/agents/
+
+# Python
+__pycache__/
+*.pyc
+
+# Hugo build outputs
+**/hugo/public/
+**/.hugo_build.lock
+
+# Wishlist Investor (prototype artifacts)
+projects/wishlist-investor/.cache/

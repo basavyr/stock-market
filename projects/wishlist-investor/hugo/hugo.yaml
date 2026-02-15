@@ -1,0 +1,10 @@
+baseURL: "/"
+languageCode: en-us
+title: Wishlist Investor
+
+relativeURLs: true
+canonifyURLs: true
+
+disableKinds:
+  - taxonomy
+  - term

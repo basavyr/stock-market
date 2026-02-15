@@ -1,0 +1,20 @@
+.cache/
+wishlist.json
+portfolio.csv
+report.json
+
+# Privacy: broker exports should never be committed
+Report-With-Cash*.csv
+
+# Generated
+__pycache__/
+*.pyc
+
+# Local temp outputs
+*.tmp.json
+report.tmp.json
+wishlist.tmp.json
+hugo/public/
+hugo/.hugo_build.lock
+__pycache__
+.python-version

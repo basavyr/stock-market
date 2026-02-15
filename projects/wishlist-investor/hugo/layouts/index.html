@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ .Site.Title }}</title>
+    <link rel="stylesheet" href="{{ "/app.css" | relURL }}" />
+  </head>
+  <body>
+    <main class="app" id="app">
+      <header class="top">
+        <div class="brand">
+          <div class="brand__mark">WI</div>
+          <div class="brand__text">
+            <div class="brand__title">Wishlist Investor</div>
+            <div class="brand__sub">Static prototype (local data only)</div>
+          </div>
+        </div>
+
+        <div class="top__actions">
+          <button class="btn btn--ghost" id="btnExport">Export JSON</button>
+          <button class="btn btn--danger" id="btnReset">Reset</button>
+        </div>
+      </header>
+
+      <section class="card" id="viewWizard" hidden>
+        <div class="card__head">
+          <h1>Setup</h1>
+          <p class="muted">Upload your IBKR portfolio CSV, build a wishlist, then generate an investment plan (quotes fetched locally).</p>
+        </div>
+
+        <div class="steps">
+           <section class="step" id="stepPortfolio">
+             <div class="step__title">1) Upload Portfolio CSV</div>
+             <div class="step__body">
+               <input class="file" id="portfolioFile" type="file" accept=".csv,text/csv" />
+               <div class="mini" id="portfolioSummary"></div>
+               <div class="row">
+                 <button class="btn" id="btnDownloadPortfolio" disabled>Download Report-With-Cash.csv</button>
+               </div>
+             </div>
+           </section>
+
+          <section class="step" id="stepWishlist">
+            <div class="step__title">2) Build Wishlist</div>
+            <div class="step__body">
+              <div class="search">
+                <input id="tickerSearch" class="input" placeholder="Search ticker or company name (or type any ticker and press Enter)" autocomplete="off" />
+                <div class="search__hint muted" id="tickerHint"></div>
+                <div class="suggest" id="suggest"></div>
+              </div>
+
+              <div class="chips" id="wishlistChips"></div>
+
+              <div class="row">
+                <button class="btn" id="btnDownloadWishlist" disabled>Download wishlist.json</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="step" id="stepGenerate">
+            <div class="step__title">3) Generate Investment Plan</div>
+            <div class="step__body">
+              <div class="row">
+                <button class="btn" id="btnGenerate" disabled>Generate Report</button>
+                <div class="mini" id="genStatus"></div>
+              </div>
+              <div class="mini muted">This uses a small local helper running on your machine to fetch quotes via <code>yfinance</code>.</div>
+              <div class="row">
+                <label class="btn btn--ghost" for="reportFile">Upload report.json (manual)</label>
+                <input id="reportFile" type="file" accept="application/json,.json" hidden />
+              </div>
+              <div class="mini" id="reportLoadStatus"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="card" id="viewReport" hidden>
+        <div class="card__head">
+          <h1>Investment Plan</h1>
+          <div class="grid" id="reportMeta"></div>
+        </div>
+        <div class="toolbar">
+          <label class="btn btn--ghost" for="reportFile2">Replace report.json</label>
+          <input id="reportFile2" type="file" accept="application/json,.json" hidden />
+          <button class="btn" id="btnEdit">Edit Wishlist</button>
+        </div>
+
+        <div class="tableWrap">
+          <table class="table" id="recTable">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Held?</th>
+                <th>Weight</th>
+                <th>Recommended $</th>
+                <th>Est. Shares</th>
+                <th>Why</th>
+                <th>Keep In Mind</th>
+              </tr>
+            </thead>
+            <tbody id="recBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <div class="muted">No data leaves your browser. Generated reports are uploaded by you and stored in localStorage.</div>
+      </footer>
+    </main>
+
+    <script src="{{ "/app.js" | relURL }}"></script>
+  </body>
+</html>
