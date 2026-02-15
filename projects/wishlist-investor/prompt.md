@@ -19,9 +19,23 @@ Your analysis must be rigorous, data-driven, forward-looking, and transparent ab
 Conduct a comprehensive analysis of the client's current investment portfolio and recommend 
 a strategic allocation of available capital across their investment wishlist. 
 
+**CRITICAL OUTPUT REQUIREMENT:** Your analysis MUST conclude with a **CLEAR, ACTIONABLE ALLOCATION TABLE** that specifies:
+
+| Ticker | Company Name | Action | Cash Amount | # of Shares | Price | Portfolio % |
+|--------|--------------|--------|------------|-------------|-------|------------|
+| TSLA   | Tesla Inc    | NEW    | $500.00    | 1.2345     | $405  | 2.50%      |
+| AAPL   | Apple Inc    | INCREASE | $1,000.00 | 5.1234    | $195  | 4.20%      |
+
+**This table is the PRIMARY DELIVERABLE.** It must be:
+- ✅ **Explicit:** Every wishlist company gets a clear allocation (dollar amount + shares)
+- ✅ **Executable:** Client can literally execute these trades exactly as shown
+- ✅ **Complete:** All available cash is allocated with no ambiguity
+- ✅ **Verifiable:** Cash amounts + share quantities must sum correctly
+- ✅ **Sortable:** Include columns for quick reference and decision-making
+
 Provide specific actionable recommendations including:
-- Dollar amounts to deploy per company
-- Exact share quantities (fractional shares permitted)
+- Dollar amounts to deploy per company (EXACT amounts)
+- Exact share quantities (fractional shares permitted, to 4 decimal places)
 - Detailed "Why" justifications grounded in financial fundamentals and corporate strategy
 - Comprehensive "Risks" assessments including regulatory and macro considerations
 - Clear confidence levels and monitoring metrics
@@ -464,29 +478,64 @@ CONFIDENCE LEVEL & KEY QUESTIONS:
 
 After analyzing all 14 positions, provide:
 
-#### **A. ALLOCATION SUMMARY TABLE**
+#### **A. ALLOCATION SUMMARY TABLE (PRIMARY OUTPUT)**
+
+**THIS IS THE MOST IMPORTANT SECTION OF YOUR ENTIRE ANALYSIS.**
+
+You must provide a **complete, clear, executable allocation table** that shows EXACTLY what the client should buy.
 
 ```
-ALLOCATION RECOMMENDATIONS SUMMARY
+═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
-Ticker  | Company Name | Action Type | Cash Amount | Shares Target | Portfolio % | Rationale
-─────────────────────────────────────────────────────────────────────────────────────────────────────
-[Row 1] | [Company 1]  | New/Increase| $XXX.XX     | XX.XXXX       | X.XX%       | [Brief note]
-[Row 2] | [Company 2]  | New/Increase| $XXX.XX     | XX.XXXX       | X.XX%       | [Brief note]
-[...]
-─────────────────────────────────────────────────────────────────────────────────────────────────────
-        | TOTAL        |             | $[Total]    |               | 100.00%     |
-        | Remaining    |             | $[Cash]     |               |             |
+FINAL ALLOCATION RECOMMENDATIONS - EXECUTE THIS TABLE
+
+Ticker | Company Name              | Action       | Cash Amount | Shares (4 decimals) | Price  | Portfolio %
+────────────────────────────────────────────────────────────────────────────────────────────────────────
+TSM    | Taiwan Semiconductor      | NEW          | $500.25     | 2.1543              | $232.50| 2.15%
+NVDA   | Nvidia Corp               | INCREASE     | $750.00     | 1.8765              | $399.50| 3.22%
+AMD    | Advanced Micro Devices    | INCREASE     | $300.00     | 1.4532              | $206.25| 1.29%
+XOM    | Exxon Mobil               | NEW          | $600.00     | 6.7821              | $88.45 | 2.57%
+CVX    | Chevron                   | INCREASE     | $400.00     | 3.2145              | $124.30| 1.72%
+OKE    | ONEOK Inc                 | NEW          | $350.00     | 4.1234              | $84.90 | 1.50%
+DUK    | Duke Energy               | INCREASE     | $280.00     | 2.8901              | $96.80 | 1.20%
+AEP    | American Electric Power   | NEW          | $320.00     | 2.5634              | $124.75| 1.37%
+GEV    | GE Vernova                | NEW          | $450.00     | 5.6789              | $79.15 | 1.93%
+PFE    | Pfizer Inc                | NEW          | $400.00     | 6.1538              | $65.00 | 1.72%
+LLY    | Eli Lilly                 | NEW          | $550.00     | 0.6987              | $787.00| 2.36%
+BX     | Blackstone                | NEW          | $320.00     | 1.2345              | $259.00| 1.37%
+VST    | Vistra Corp               | NEW          | $380.00     | 3.8462              | $98.75 | 1.63%
+MU     | Micron Technology         | NEW          | $420.00     | 2.0408              | $205.50| 1.80%
+────────────────────────────────────────────────────────────────────────────────────────────────────────
+TOTAL ALLOCATION               | $5,629.90    |                         |        | 28.83%
+REMAINING CASH (if strategic)  | $[X.XX]      |                         |        |
+EXISTING POSITIONS (unchanged) | —            |                         |        | 71.17%
+───────────────────────────────────────────────────────────────────────────────────────────────────────
+TOTAL POST-ALLOCATION PORTFOLIO VALUE                                                    | 100.00%
+═══════════════════════════════════════════════════════════════════════════════════════════════════════
 ```
 
-**For each company in the allocation table:**
-- **Ticker:** Stock symbol
-- **Company Name:** Full company name
-- **Action Type:** "New Position" or "Increase Existing"
-- **Cash Amount:** Exact dollar allocation ($XXX.XX format)
-- **Shares Target:** Exact number of shares to purchase (including 4 decimal places for fractional shares)
-- **Portfolio %:** Position weight as % of total portfolio post-allocation
-- **Rationale:** 1-2 sentence note on why this allocation size (conviction level, diversification need, capital efficiency, etc.)
+**CRITICAL REQUIREMENTS FOR THIS TABLE:**
+
+1. **MUST include EVERY company from the wishlist** (no omissions)
+2. **MUST specify exact cash amount** for each company (to nearest cent: $XXX.XX)
+3. **MUST specify exact share quantity** (to 4 decimals: X.XXXX)
+4. **MUST show current/estimated stock price** (so client can verify the math)
+5. **MUST identify action type:** "NEW" (add new position) or "INCREASE" (add to existing)
+6. **MUST show portfolio weight %** (allocation as % of total portfolio post-allocation)
+7. **MUST sum to 100%** when combined with existing holdings
+8. **MUST verify math:** Cash Amount ÷ Current Price = Shares (or very close, within 0.0001 tolerance)
+
+**Example verification:**
+- Ticker: TSLA
+- Cash: $1,000.00
+- Current Price: $250.00
+- Shares: $1,000.00 ÷ $250.00 = 4.0000 ✅
+
+**This table is ACTIONABLE.** Client should be able to:
+- Copy the ticker and dollar amount
+- Buy the exact number of shares (or let broker auto-calculate)
+- Verify they spent what they planned
+- Track the allocation post-execution
 
 #### **B. POST-ALLOCATION PORTFOLIO COMPOSITION**
 
@@ -612,6 +661,8 @@ TOTAL                  | 100%        | 100%                | -           | [Over
 
 ## OUTPUT STRUCTURE & FORMAT
 
+**YOUR ANALYSIS SHOULD FOLLOW THIS STRUCTURE, WITH SECTION 5.A (ALLOCATION TABLE) AS THE PRIMARY DELIVERABLE:**
+
 1. **Executive Summary** (0.5 page)
    - Overview of current portfolio and rebalancing rationale
    - Key themes in the wishlist (energy transition, income generation, etc.)
@@ -631,33 +682,75 @@ TOTAL                  | 100%        | 100%                | -           | [Over
    - Why now is a good time for this reallocation
 
 4. **Individual Company Analyses** (2-4 pages per company)
-   - Follow the detailed format above for all 14 wishlist companies
+   - Follow the detailed format above for all wishlist companies
    - Ensure consistent depth and analytical rigor
 
-5. **Allocation Recommendations Summary** (1 page)
-   - Allocation table
-   - Post-allocation sector/concentration breakdown
-   - Portfolio characteristic changes (P/E, dividend yield, growth rate, etc.)
+5. **🔴 PRIMARY ALLOCATION SECTION 🔴**
 
-6. **Portfolio Construction Strategy** (0.5 pages)
+   **5.A. ALLOCATION SUMMARY TABLE (EXECUTIVE-READY, ACTIONABLE)**
+   - **THIS IS YOUR MOST IMPORTANT DELIVERABLE**
+   - Complete table with EVERY wishlist company
+   - EXACT cash amounts, share quantities, current prices
+   - Portfolio weights and action types
+   - Verification that math is correct (cash ÷ price = shares)
+   - MUST be clear enough to execute directly
+
+   **5.B. POST-ALLOCATION PORTFOLIO COMPOSITION**
+   - Sector breakdown (before vs. after)
+   - Concentration metrics
+   - Expected portfolio characteristics
+   - Diversification improvements
+
+   **5.C. PORTFOLIO CONSTRUCTION STRATEGY**
    - Rebalancing frequency and triggers
    - Capital deployment timing and order
    - 3-7 year monitoring and adjustment plan
 
-7. **Implementation Roadmap** (0.5 pages)
+6. **Implementation Roadmap** (0.5 pages)
    - Step-by-step execution plan
    - Monitoring dashboard and key metrics
    - Calendar of important upcoming catalysts and monitoring dates
 
-8. **Risk Dashboard & Contingency Plan** (1 page)
-   - Summary of key risks across all 14 recommended positions
+7. **Risk Dashboard & Contingency Plan** (1 page)
+   - Summary of key risks across all recommended positions
    - Macro risks and mitigation
    - What changes in the market/company would warrant rebalancing
    - Early warning indicators to monitor
 
 ---
 
+**ALLOCATION TABLE PLACEMENT & EMPHASIS:**
+
+The allocation table (Section 5.A) should be positioned where clients see it FIRST and can ACT on it immediately. This is not a supporting table—it is the CORE OUTPUT of your analysis. A client should be able to:
+
+1. Read the executive summary
+2. Glance at the allocation table
+3. Execute the trades
+4. Read the supporting analysis if desired
+
+If your allocation table is confusing, hard to read, or lacks specificity, your entire analysis fails—regardless of quality.
+
+---
+
 ## CRITICAL INSTRUCTIONS FOR ANALYSIS
+
+**⚠️ MOST IMPORTANT: THE ALLOCATION TABLE IS YOUR PRIMARY DELIVERABLE ⚠️**
+
+Your analysis MUST conclude with a clear, complete allocation table that shows:
+- EVERY company from the wishlist (no omissions, no exceptions)
+- EXACT cash amount for each company (to the nearest cent)
+- EXACT number of shares to purchase (to 4 decimal places)
+- Action type (NEW or INCREASE existing)
+- Estimated current stock price (for verification)
+- Portfolio weight % post-allocation
+
+This table must be clear enough that a client can:
+1. Copy the ticker and cash amount
+2. Execute the trade in their brokerage
+3. Verify they received the correct number of shares
+4. Track their portfolio against the recommendation
+
+---
 
 ✅ **Be Data-Driven:** Every claim must be backed by financial data, filings, or reputable research
 ✅ **Be Specific:** Exact dollar amounts, share quantities (4 decimals), percentages, timelines
@@ -667,8 +760,10 @@ TOTAL                  | 100%        | 100%                | -           | [Over
 ✅ **Be Comparative:** Explain why recommended companies rank highest relative to alternatives
 ✅ **Be Balanced:** Maintain 3-7 year perspective; don't chase short-term price moves
 ✅ **Be Realistic:** Acknowledge uncertainty; use confidence levels (High/Medium/Low)
+✅ **Be EXPLICIT:** Your final allocation table must be crystal clear and actionable
 ✅ **Avoid Hype:** Don't recommend stocks just because they're popular or have recent momentum
 ✅ **Avoid Template Language:** Make each recommendation feel specific and conviction-based
+✅ **Avoid Ambiguity:** Do NOT provide vague allocations like "allocate between $X-Y" or "consider buying."
 
 ---
 
@@ -813,8 +908,46 @@ TOTAL                  | 100%        | 100%                | -           | [Over
 
 ---
 
-**Prompt Version:** 2.0 (Refactored for Dynamic Client Data)  
-**Created:** February 15, 2026  
-**Purpose:** Universal template for portfolio optimization analysis  
+## FINAL VERIFICATION CHECKLIST (Before Submitting Output)
+
+Before you finalize your analysis, verify your allocation table against this checklist:
+
+- ✅ **Completeness:** Does the table include EVERY company from the client's wishlist? (No omissions)
+- ✅ **Specificity:** Does each company have an EXACT cash amount (to nearest cent: $X.XX)?
+- ✅ **Shares:** Does each company have an EXACT share quantity (to 4 decimals: X.XXXX)?
+- ✅ **Current Price:** Is the estimated current stock price shown for each company?
+- ✅ **Action Type:** Is it clear whether this is a NEW position or INCREASE to existing?
+- ✅ **Portfolio Weight:** Does each allocation show % of total portfolio post-allocation?
+- ✅ **Math Verification:** Does Cash Amount ÷ Current Price ≈ Shares (within rounding tolerance)?
+- ✅ **Totals:** Do all allocations sum to the available cash (or less if strategic reserves)?
+- ✅ **Clarity:** Could a client execute these trades without calling you to clarify?
+- ✅ **Rationale:** Is there a clear reason for each allocation size (tied to conviction, diversification, etc.)?
+
+**If you cannot check all boxes, revise your allocation table until you can.**
+
+---
+
+## **YOUR FINAL OUTPUT CHECKLIST:**
+
+Your analysis is complete when it includes:
+
+1. ✅ **Executive Summary** (why rebalance, key themes, expected outcomes)
+2. ✅ **Current Portfolio Analysis** (assessment of existing holdings)
+3. ✅ **Macro & Sector Context** (relevant backdrop for recommendations)
+4. ✅ **Individual Company Analyses** (deep-dive on each wishlist company with Why/Risks)
+5. ✅ **🔴 ALLOCATION TABLE 🔴** (EXPLICIT, ACTIONABLE, with every company and exact amounts)
+6. ✅ **Post-Allocation Portfolio Analysis** (how allocation improves portfolio)
+7. ✅ **Portfolio Strategy** (rebalancing, monitoring, timeline)
+8. ✅ **Implementation Roadmap** (step-by-step execution plan)
+9. ✅ **Risk Dashboard** (key risks and mitigation)
+
+**The allocation table (item 5) is non-negotiable and must be crystal clear.**
+
+---
+
+**Prompt Version:** 2.1 (Enhanced Output Clarity)  
+**Last Updated:** February 15, 2026  
+**Purpose:** Universal template for portfolio optimization analysis with EXPLICIT allocation table requirement  
 **Data Format:** Client-provided CSV files (current portfolio + wishlist)  
-**Adaptability:** Flexible for any portfolio size, sector mix, or client profile
+**Adaptability:** Flexible for any portfolio size, sector mix, or client profile  
+**Key Enhancement:** Crystal-clear allocation table as PRIMARY deliverable (EXACT amounts, shares, prices)
