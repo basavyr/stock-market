@@ -620,8 +620,8 @@ def allocate_cash_scored(
         cur_val = float(holding_values.get(sym, 0.0))
         cur_w = (cur_val / denom) if denom > 0 else 0.0
         s = _score_company(sym=sym, quote=quotes.get(sym), cur_weight=cur_w, whole_shares=whole_shares)
-        raw = _safe_float(s.get("score_raw"), default=_safe_float(s.get("score"), default=0.0))
-        scored.append((sym, raw, s))
+        score = _safe_float(s.get("score"), default=0.0)
+        scored.append((sym, score, s))
 
     # Price tilt reference: median price in wishlist universe.
     prices = []
@@ -633,14 +633,14 @@ def allocate_cash_scored(
     prices.sort()
     p_ref = prices[len(prices) // 2] if prices else 0.0
 
-    # Softmax on raw score to get differentiated weights.
+    # Softmax on score (0..100) to get differentiated weights.
     import math
 
     temp = softmax_temp if softmax_temp > 0 else 10.0
     exps: Dict[str, float] = {}
-    max_raw = max((raw for _sym, raw, _s in scored), default=0.0)
-    for sym, raw, _s in scored:
-        exps[sym] = math.exp((raw - max_raw) / temp)
+    max_s = max((s for _sym, s, _obj in scored), default=0.0)
+    for sym, s, _obj in scored:
+        exps[sym] = math.exp((s - max_s) / temp)
     total_exp = sum(exps.values()) or 1.0
 
     raw_w: Dict[str, float] = {}
@@ -656,29 +656,68 @@ def allocate_cash_scored(
 
     total_w = sum(raw_w.values()) or 1.0
 
-    # First pass: proportional allocation with max weight cap.
+    # Compute per-symbol max additional dollars allowed (position cap + per-name cap).
     alloc: Dict[str, float] = {sym: 0.0 for sym in wishlist}
     caps: Dict[str, float] = {}
+    zero_reasons: Dict[str, str] = {}
     for sym in wishlist:
         cur_val = float(holding_values.get(sym, 0.0))
         cap_val = float(max_w * denom) if max_w > 0 else float("inf")
-        max_add = max(0.0, cap_val - cur_val)
-        caps[sym] = max_add
+        max_add_pos = max(0.0, cap_val - cur_val)
+        max_add = min(float(max_add_pos), float(per_name_new_alloc_cap))
+        caps[sym] = float(max_add)
+        if max_add <= 0:
+            zero_reasons[sym] = "position_cap"
 
-        ideal = investable_cash * (raw_w[sym] / total_w)
-        if max_new_alloc_pct > 0:
-            ideal = min(float(ideal), float(investable_cash) * float(max_new_alloc_pct))
-        alloc[sym] = max(0.0, min(float(ideal), float(max_add)))
+    # Phase 1: ensure we only output 0 allocations for strict reasons.
+    # If we can afford it and the symbol has room, give each wishlist name a starter buy.
+    remaining = float(investable_cash)
+    eligible_for_starter = [
+        sym
+        for sym, _s, _obj in sorted(scored, key=lambda x: x[1], reverse=True)
+        if caps.get(sym, 0.0) >= min_order_usd and _safe_float((quotes.get(sym) or {}).get("price"), default=0.0) > 0
+    ]
 
-    # Remove dust allocations.
-    for sym in wishlist:
-        if alloc[sym] < min_order_usd:
-            alloc[sym] = 0.0
+    # If we can cover everyone, do it. Otherwise, cover as many as possible in score order.
+    starter_targets = eligible_for_starter
+    if min_order_usd > 0 and len(eligible_for_starter) * float(min_order_usd) > float(remaining) and eligible_for_starter:
+        k = int(float(remaining) // float(min_order_usd))
+        starter_targets = eligible_for_starter[: max(0, k)]
 
-    spent = sum(alloc.values())
-    leftover = max(0.0, float(investable_cash) - spent)
+    for sym in starter_targets:
+        if remaining < min_order_usd:
+            break
+        if caps.get(sym, 0.0) < min_order_usd:
+            continue
+        # Require a valid price to avoid suggesting buys without quotes.
+        p = _safe_float((quotes.get(sym) or {}).get("price"), default=0.0)
+        if p <= 0:
+            zero_reasons[sym] = "missing_price"
+            continue
+        alloc[sym] = float(min_order_usd)
+        remaining -= float(min_order_usd)
+
+    included = [sym for sym in wishlist if alloc.get(sym, 0.0) > 0]
+
+    # Phase 2: allocate the rest by weights, respecting caps.
+    def room(sym: str) -> float:
+        return max(0.0, float(caps.get(sym, 0.0)) - float(alloc.get(sym, 0.0)))
+
+    if remaining > 0 and included:
+        elig = [sym for sym in included if room(sym) > 0.01]
+        denom_w = sum(raw_w.get(sym, 0.0) for sym in elig) or 1.0
+        for sym in elig:
+            w = float(raw_w.get(sym, 0.0)) / float(denom_w)
+            add = min(float(remaining) * float(w), room(sym))
+            if add <= 0:
+                continue
+            alloc[sym] = float(alloc.get(sym, 0.0)) + float(add)
+
+        remaining = max(0.0, float(investable_cash) - sum(alloc.values()))
 
     # Optional whole-share rounding.
+    leftover = max(0.0, float(investable_cash) - sum(alloc.values()))
+
     if whole_shares:
         rounded: Dict[str, float] = {}
         for sym in wishlist:
@@ -690,39 +729,48 @@ def allocate_cash_scored(
             shares = int(float(alloc[sym]) // float(p))
             rounded[sym] = round(float(shares) * float(p), 2)
         alloc = rounded
-        spent = sum(alloc.values())
-        leftover = max(0.0, float(investable_cash) - spent)
+        leftover = max(0.0, float(investable_cash) - sum(alloc.values()))
 
-    # Second pass: redistribute leftover to best-scoring names that still have cap room.
-    if leftover > 0:
-        by_score = sorted(scored, key=lambda x: x[1], reverse=True)
-        for _ in range(2000):
-            progressed = False
-            for sym, _, _s in by_score:
-                room = max(0.0, caps[sym] - alloc[sym])
-                room = min(room, max(0.0, per_name_new_alloc_cap - alloc[sym]))
-                if room <= 0:
-                    continue
-                if whole_shares:
+        # After rounding, try to spend leftover by adding single shares to the best names
+        # that still have cap room.
+        if leftover > 0 and included:
+            by_score = sorted(scored, key=lambda x: x[1], reverse=True)
+            for _ in range(2000):
+                progressed = False
+                for sym, _s, _obj in by_score:
+                    if sym not in included:
+                        continue
                     q = quotes.get(sym) or {}
                     p = _safe_float(q.get("price"), default=0.0)
                     if p <= 0:
                         continue
-                    if leftover < p or room < p:
+                    if leftover < p:
+                        continue
+                    if caps.get(sym, 0.0) - alloc.get(sym, 0.0) < p:
                         continue
                     alloc[sym] = round(float(alloc[sym] + p), 2)
                     leftover = round(float(leftover - p), 2)
-                else:
-                    add = min(leftover, room)
-                    if add < min_order_usd:
-                        continue
-                    alloc[sym] = round(float(alloc[sym] + add), 2)
-                    leftover = round(float(leftover - add), 2)
-                progressed = True
-                if leftover < min_order_usd:
+                    progressed = True
                     break
-            if not progressed or leftover < min_order_usd:
-                break
+                if not progressed:
+                    break
+
+    # Round output dollars and finalize leftover.
+    for sym in wishlist:
+        if alloc.get(sym, 0.0) > 0:
+            alloc[sym] = round(float(alloc[sym]), 2)
+    leftover = round(max(0.0, float(investable_cash) - sum(alloc.values())), 2)
+
+    # Explain true-zero allocations.
+    for sym in wishlist:
+        if alloc.get(sym, 0.0) > 0:
+            continue
+        if sym in zero_reasons:
+            continue
+        if caps.get(sym, 0.0) < min_order_usd:
+            zero_reasons[sym] = "position_cap"
+        else:
+            zero_reasons[sym] = "insufficient_cash_for_min_order"
 
     meta = {
         "whole_shares": whole_shares,
@@ -732,6 +780,7 @@ def allocate_cash_scored(
         "max_new_alloc_pct": float(max_new_alloc_pct),
         "max_position_weight": float(max_w),
         "scores": {sym: s for (sym, _score, s) in scored},
+        "zero_reasons": zero_reasons,
         "unallocated_cash": round(float(leftover), 2),
     }
     return alloc, meta

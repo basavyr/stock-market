@@ -23,6 +23,12 @@
   const btnGenerate = el("btnGenerate");
   const genStatus = el("genStatus");
 
+  const optWholeShares = el("optWholeShares");
+  const optMinOrder = el("optMinOrder");
+  const optPriceTilt = el("optPriceTilt");
+  const optScoreTemp = el("optScoreTemp");
+  const optMaxNewAlloc = el("optMaxNewAlloc");
+
   const reportFile = el("reportFile");
   const reportFile2 = el("reportFile2");
   const reportLoadStatus = el("reportLoadStatus");
@@ -215,6 +221,42 @@
       s1.textContent = "Open";
       why.appendChild(s1);
       const ul1 = document.createElement("ul");
+
+      if (r.score != null) {
+        const li = document.createElement("li");
+        li.textContent = `Score: ${r.score}`;
+        ul1.appendChild(li);
+
+        if (r.score_components) {
+          const c = r.score_components;
+          const parts = [
+            ["Quality", c.quality],
+            ["Growth", c.growth],
+            ["Value", c.value],
+            ["Income", c.income],
+            ["Risk", c.risk],
+            ["Price", c.afford],
+            ["Concentration", c.concentration],
+          ]
+            .filter((x) => x[1] != null)
+            .map((x) => `${x[0]} ${Number(x[1]).toFixed(1)}`)
+            .join(" | ");
+
+          if (parts) {
+            const li2 = document.createElement("li");
+            li2.textContent = `Score components: ${parts}`;
+            ul1.appendChild(li2);
+          }
+        }
+
+        if (Array.isArray(r.score_notes) && r.score_notes.length) {
+          r.score_notes.slice(0, 2).forEach((n) => {
+            const li3 = document.createElement("li");
+            li3.textContent = String(n);
+            ul1.appendChild(li3);
+          });
+        }
+      }
       (r.why || []).forEach((x) => {
         const li = document.createElement("li");
         li.textContent = String(x);
@@ -237,6 +279,7 @@
       const cells = [
         `<code>${r.symbol || ""}</code>`,
         r.price ? `$${formatMoney(r.price)}` : "-",
+        r.score != null ? String(r.score) : "-",
         held,
         `${w.toFixed(1)}%`,
         `$${formatMoney(r.recommended_amount)}`,
@@ -281,10 +324,18 @@
     if (!portfolioCsv) throw new Error("Missing portfolio CSV");
     if (!wishlist.length) throw new Error("Missing wishlist tickers");
 
+    const settings = {
+      whole_shares: !!(optWholeShares && optWholeShares.checked),
+      min_order_usd: optMinOrder && optMinOrder.value ? Number(optMinOrder.value) : undefined,
+      price_tilt: optPriceTilt && optPriceTilt.value ? Number(optPriceTilt.value) : undefined,
+      score_temperature: optScoreTemp && optScoreTemp.value ? Number(optScoreTemp.value) : undefined,
+      max_new_alloc_pct: optMaxNewAlloc && optMaxNewAlloc.value ? Number(optMaxNewAlloc.value) / 100 : undefined,
+    };
+
     const r = await fetch(`${backendBase()}/generate`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ portfolio_csv: portfolioCsv, wishlist }),
+      body: JSON.stringify({ portfolio_csv: portfolioCsv, wishlist, settings }),
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {
@@ -384,6 +435,21 @@
     renderWishlistChips();
     btnDownloadWishlist.disabled = getWishlist().length === 0;
     if (btnGenerate) btnGenerate.disabled = getWishlist().length === 0 || !localStorage.getItem(LS.portfolioCsv);
+
+    // Settings defaults
+    if (optMinOrder && !optMinOrder.value) optMinOrder.value = localStorage.getItem("wi_opt_min_order") || "25";
+    if (optPriceTilt && !optPriceTilt.value) optPriceTilt.value = localStorage.getItem("wi_opt_price_tilt") || "0.20";
+    if (optScoreTemp && !optScoreTemp.value) optScoreTemp.value = localStorage.getItem("wi_opt_score_temp") || "10";
+    if (optMaxNewAlloc && !optMaxNewAlloc.value) optMaxNewAlloc.value = localStorage.getItem("wi_opt_max_new_alloc") || "40";
+    if (optWholeShares) optWholeShares.checked = (localStorage.getItem("wi_opt_whole_shares") || "0") === "1";
+  }
+
+  function persistSettings() {
+    if (optMinOrder) localStorage.setItem("wi_opt_min_order", optMinOrder.value || "");
+    if (optPriceTilt) localStorage.setItem("wi_opt_price_tilt", optPriceTilt.value || "");
+    if (optScoreTemp) localStorage.setItem("wi_opt_score_temp", optScoreTemp.value || "");
+    if (optMaxNewAlloc) localStorage.setItem("wi_opt_max_new_alloc", optMaxNewAlloc.value || "");
+    if (optWholeShares) localStorage.setItem("wi_opt_whole_shares", optWholeShares.checked ? "1" : "0");
   }
 
   portfolioFile.addEventListener("change", async () => {
@@ -443,6 +509,7 @@
       genStatus.textContent = "Generating...";
       btnGenerate.disabled = true;
       try {
+        persistSettings();
         const report = await generateReportViaBackend();
         saveJsonLS(LS.report, report);
         renderReport(report);

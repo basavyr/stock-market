@@ -58,13 +58,43 @@
             </div>
           </section>
 
-          <section class="step" id="stepGenerate">
-            <div class="step__title">3) Generate Investment Plan</div>
-            <div class="step__body">
-              <div class="row">
-                <button class="btn" id="btnGenerate" disabled>Generate Report</button>
-                <div class="mini" id="genStatus"></div>
+           <section class="step" id="stepGenerate">
+             <div class="step__title">3) Generate Investment Plan</div>
+             <div class="step__body">
+               <div class="row" style="align-items:flex-end">
+                 <div style="min-width:220px; flex:1">
+                   <label class="mini muted" for="optWholeShares">Whole shares only</label>
+                   <div>
+                     <input id="optWholeShares" type="checkbox" />
+                     <span class="mini muted">(helps when your broker doesn't support fractional shares)</span>
+                   </div>
+                 </div>
+
+                 <div style="min-width:170px">
+                   <label class="mini muted" for="optMinOrder">Min order ($)</label>
+                   <input id="optMinOrder" class="input" inputmode="decimal" placeholder="25" />
+                 </div>
+
+                 <div style="min-width:170px">
+                   <label class="mini muted" for="optPriceTilt">Price tilt</label>
+                   <input id="optPriceTilt" class="input" inputmode="decimal" placeholder="0.20" />
+                 </div>
+
+                 <div style="min-width:170px">
+                 <label class="mini muted" for="optScoreTemp">Score temperature</label>
+                 <input id="optScoreTemp" class="input" inputmode="decimal" placeholder="10" />
+               </div>
+
+               <div style="min-width:170px">
+                 <label class="mini muted" for="optMaxNewAlloc">Max per name (%)</label>
+                 <input id="optMaxNewAlloc" class="input" inputmode="decimal" placeholder="40" />
+               </div>
               </div>
+
+               <div class="row">
+                 <button class="btn" id="btnGenerate" disabled>Generate Report</button>
+                 <div class="mini" id="genStatus"></div>
+               </div>
               <div class="mini muted">This uses a small local helper running on your machine to fetch quotes via <code>yfinance</code>.</div>
               <div class="row">
                 <label class="btn btn--ghost" for="reportFile">Upload report.json (manual)</label>
@@ -93,6 +123,7 @@
               <tr>
                 <th>Symbol</th>
                 <th>Price</th>
+                <th>Score</th>
                 <th>Held?</th>
                 <th>Weight</th>
                 <th>Recommended $</th>
