@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wishlist Investor</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <main class="app">
+      <header class="top">
+        <div class="brand">
+          <div class="brand__mark">WI</div>
+          <div>
+            <div class="brand__title">Wishlist Investor</div>
+            <div class="brand__sub">Desktop app (local-only)</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card__head">
+          <h1>Setup</h1>
+          <p class="muted">Upload your IBKR portfolio, add wishlist tickers, then generate the plan.</p>
+        </div>
+
+        <div class="steps">
+          <section class="step">
+            <div class="step__title">1) Upload Portfolio CSV</div>
+            <div class="step__body">
+              <input class="file" id="portfolioFile" type="file" accept=".csv,text/csv" />
+            </div>
+          </section>
+
+          <section class="step">
+            <div class="step__title">2) Wishlist</div>
+            <div class="step__body">
+              <div class="search">
+                <input id="tickerSearch" class="input" placeholder="Type a ticker and press Enter" autocomplete="off" />
+                <div class="search__hint muted" id="tickerHint"></div>
+                <div class="suggest" id="suggest"></div>
+              </div>
+
+              <div class="chips" id="wishlistChips"></div>
+            </div>
+          </section>
+
+          <section class="step">
+            <div class="step__title">3) Generate</div>
+            <div class="step__body">
+              <div class="row" style="align-items:flex-end">
+                <div style="min-width:220px; flex:1">
+                  <label class="mini muted" for="optWholeShares">Whole shares only</label>
+                  <div>
+                    <input id="optWholeShares" type="checkbox" />
+                    <span class="mini muted">(toggle if you don't want fractional shares)</span>
+                  </div>
+                </div>
+
+                <div style="min-width:170px">
+                  <label class="mini muted" for="optMinOrder">Min order ($)</label>
+                  <input id="optMinOrder" class="input" inputmode="decimal" value="25" />
+                </div>
+
+                <div style="min-width:170px">
+                  <label class="mini muted" for="optPriceTilt">Price tilt</label>
+                  <input id="optPriceTilt" class="input" inputmode="decimal" value="0.20" />
+                </div>
+
+                <div style="min-width:170px">
+                  <label class="mini muted" for="optScoreTemp">Score temperature</label>
+                  <input id="optScoreTemp" class="input" inputmode="decimal" value="10" />
+                </div>
+
+                <div style="min-width:170px">
+                  <label class="mini muted" for="optMaxNewAlloc">Max per name (%)</label>
+                  <input id="optMaxNewAlloc" class="input" inputmode="decimal" value="40" />
+                </div>
+              </div>
+
+              <div class="row">
+                <button class="btn" id="btnGenerate" type="button">Generate Report</button>
+                <div class="mini" id="status"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 14px">
+        <div class="card__head">
+          <h1>Investment Plan</h1>
+          <div class="grid" id="meta"></div>
+        </div>
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Score</th>
+                <th>Held?</th>
+                <th>Weight</th>
+                <th>Recommended $</th>
+                <th>Est. Shares</th>
+                <th>Why</th>
+                <th>Keep In Mind</th>
+              </tr>
+            </thead>
+            <tbody id="recBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
