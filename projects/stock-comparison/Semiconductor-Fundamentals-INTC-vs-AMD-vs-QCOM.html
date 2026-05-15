@@ -3,13 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Semiconductor Fundamentals — INTC vs AMD vs QCOM</title>
+<title>Semiconductor Fundamentals &mdash; INTC vs AMD vs QCOM</title>
+
+<!-- MathJax 3 CDN -->
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-/* ═══════════════════════════════════════════════
-   THEME VARIABLES — Light & Dark
-   ═══════════════════════════════════════════════ */
+/* ===============================================
+   THEME VARIABLES - Light & Dark
+   =============================================== */
 [data-theme="light"]{
   --bg:       #fafafa;
   --bg-alt:   #f3f4f6;
@@ -24,12 +40,10 @@
   --shadow:   0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
   --shadow-lg:0 4px 12px rgba(0,0,0,0.06);
 
-  /* Company — muted tones */
   --intc:     #3b7dd8;
   --amd:      #c9444d;
   --qcom:     #4f63b8;
 
-  /* Accents */
   --gold:     #b8860b;
   --gold-bg:  rgba(184,134,11,0.08);
   --green:    #2d8659;
@@ -42,6 +56,7 @@
   --insight-bg:#f5f7fc;
   --panel-bg: #fdfdfe;
   --header-bg:#f0f2f5;
+  --toc-bg:   #f7f8fa;
 
   --toggle-bg:   #e5e7eb;
   --toggle-knob: #ffffff;
@@ -78,15 +93,16 @@
   --insight-bg:rgba(75,85,140,0.08);
   --panel-bg: #191c26;
   --header-bg:#14161e;
+  --toc-bg:   #181b24;
 
   --toggle-bg:   #2e3243;
   --toggle-knob: #1c1f2a;
   --toggle-icon: #8696d6;
 }
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    BASE
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 html{scroll-behavior:smooth}
 body{
   font-family: 'Georgia', 'Palatino Linotype', 'Book Antiqua', 'Palatino', serif;
@@ -99,14 +115,15 @@ body{
   -moz-osx-font-smoothing: grayscale;
 }
 a{color:var(--qcom);text-decoration:none}
+a:hover{text-decoration:underline}
 strong{color:var(--text);font-weight:700}
 .kw{font-weight:700;color:var(--gold)}
 .kw-green{font-weight:700;color:var(--green)}
 .kw-red{font-weight:700;color:var(--red)}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    THEME TOGGLE SWITCH
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .theme-switch{
   position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;
   user-select:none;
@@ -132,9 +149,9 @@ strong{color:var(--text);font-weight:700}
   font-size:0.78rem;color:var(--text-dim);letter-spacing:0.3px;
 }
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    HEADER
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .page-header{
   text-align:center;padding:52px 24px 36px;
   background:var(--header-bg);
@@ -164,9 +181,9 @@ strong{color:var(--text);font-weight:700}
   margin-top:20px;flex-wrap:wrap;
 }
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    CONTROLS
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .btn-toggle{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   background:var(--card);border:1px solid var(--border);color:var(--text-sec);
@@ -175,15 +192,50 @@ strong{color:var(--text);font-weight:700}
 }
 .btn-toggle:hover{border-color:var(--gold);color:var(--gold)}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
+   TABLE OF CONTENTS
+   =============================================== */
+.toc{
+  background:var(--toc-bg);border-bottom:1px solid var(--border);
+  padding:0;transition:background 0.35s ease;
+}
+.toc-header{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px 24px;cursor:pointer;user-select:none;
+}
+.toc-header h3{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-dim);margin:0;
+}
+.toc-header .toc-caret{
+  font-size:0.6rem;color:var(--text-dim);transition:transform 0.3s;
+}
+.toc.collapsed .toc-caret{transform:rotate(-90deg)}
+.toc.collapsed .toc-body{display:none}
+.toc-body{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;
+  padding:0 24px 16px;
+}
+.toc-body a{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;color:var(--text-sec);text-decoration:none;
+  padding:4px 0;letter-spacing:0.2px;transition:color 0.2s;
+}
+.toc-body a:hover{color:var(--gold);text-decoration:none}
+.toc-body a .toc-num{
+  color:var(--text-dim);font-weight:600;margin-right:4px;font-size:0.72rem;
+}
+
+/* ===============================================
    CONTAINER
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .container{max-width:1060px;margin:0 auto;padding:36px 20px 60px}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    SECTION
-   ═══════════════════════════════════════════════ */
-.section{margin-bottom:40px}
+   =============================================== */
+.section{margin-bottom:44px}
 .section-header{
   display:flex;align-items:center;gap:12px;margin-bottom:16px;
   cursor:pointer;user-select:none;
@@ -200,16 +252,69 @@ strong{color:var(--text);font-weight:700}
 .section.collapsed .caret{transform:rotate(-90deg)}
 .section.collapsed .section-body{display:none}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
+   THEORY BLOCK
+   =============================================== */
+.theory-block{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:28px 28px 24px;margin-bottom:18px;
+  box-shadow:var(--shadow);transition:background 0.35s ease, border-color 0.35s ease;
+}
+.theory-block p{
+  font-size:0.9rem;color:var(--text-sec);line-height:1.85;margin-bottom:12px;
+}
+.theory-block p:last-child{margin-bottom:0}
+
+/* Math expandable */
+.math-toggle{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-weight:700;font-size:0.76rem;color:var(--gold);padding:8px 0 4px;
+  letter-spacing:0.5px;text-transform:uppercase;border:none;background:none;
+}
+.math-toggle .m-caret{font-size:0.55rem;transition:transform 0.2s;display:inline-block;width:12px}
+.math-section.collapsed .m-caret{transform:rotate(-90deg)}
+.math-section.collapsed .math-content{display:none}
+.math-content{
+  padding:12px 0 4px 0;font-size:0.88rem;color:var(--text-sec);line-height:1.9;
+}
+.math-content .mjx-container{margin:8px 0}
+
+/* Formula display block */
+.formula-block{
+  background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
+  padding:16px 20px;margin:14px 0;
+  font-size:0.92rem;color:var(--formula);line-height:2;overflow-x:auto;
+  text-align:center;
+}
+.formula-block .mjx-container{font-size:1.05em !important}
+
+/* Variable definitions */
+.var-def{
+  margin:10px 0 10px 8px;font-size:0.85rem;color:var(--text-sec);line-height:1.9;
+  font-family:'Georgia','Palatino Linotype',serif;
+}
+.var-def .mjx-container{font-size:0.95em !important}
+
+/* Income statement waterfall */
+.waterfall{
+  background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
+  padding:18px 24px;margin:14px 0;font-family:'SF Mono',Menlo,Consolas,monospace;
+  font-size:0.82rem;color:var(--formula);line-height:2.2;
+}
+.waterfall .wf-indent{padding-left:20px}
+.waterfall .wf-line{border-top:1px dashed var(--border);margin:2px 0}
+.waterfall .wf-bold{font-weight:700}
+
+/* ===============================================
    TABLE CARD
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .table-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:10px;overflow:hidden;box-shadow:var(--shadow);
   transition:background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
-/* Column Headers */
 .col-header-row{
   display:grid;grid-template-columns:1fr repeat(3,minmax(90px,130px)) 42px;
   align-items:center;padding:11px 18px;
@@ -219,7 +324,6 @@ strong{color:var(--text);font-weight:700}
   transition:background 0.35s ease;
 }
 
-/* Metric Row */
 .metric-row{
   display:grid;grid-template-columns:1fr repeat(3,minmax(90px,130px)) 42px;
   align-items:center;padding:13px 18px;
@@ -254,9 +358,9 @@ strong{color:var(--text);font-weight:700}
 }
 .btn-info:hover,.btn-info.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    LEARNING PANEL
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .learning-panel{
   display:none;grid-column:1/-1;background:var(--panel-bg);
   border-top:1px solid var(--border);padding:22px 26px;
@@ -288,9 +392,8 @@ strong{color:var(--text);font-weight:700}
 }
 .lp-content .formula-block{
   background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
-  padding:12px 16px;margin:10px 0;
-  font-family:'SF Mono',Menlo,Consolas,monospace;
-  font-size:0.82rem;color:var(--formula);line-height:1.6;
+  padding:12px 16px;margin:10px 0;text-align:center;
+  font-size:0.92rem;color:var(--formula);line-height:1.6;
 }
 .lp-content .insight{
   margin-top:10px;padding:12px 16px;background:var(--insight-bg);
@@ -301,9 +404,42 @@ strong{color:var(--text);font-weight:700}
 .lp-content .insight .tag-amd{color:var(--amd);font-weight:700}
 .lp-content .insight .tag-qcom{color:var(--qcom);font-weight:700}
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
+   READ MORE
+   =============================================== */
+.read-more{
+  margin-top:16px;padding:14px 18px;
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;
+  transition:background 0.35s ease;
+}
+.read-more-toggle{
+  display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-weight:600;font-size:0.74rem;color:var(--text-dim);
+  letter-spacing:0.6px;text-transform:uppercase;
+}
+.read-more-toggle .rm-caret{font-size:0.5rem;transition:transform 0.2s;display:inline-block;width:12px}
+.read-more.collapsed .rm-caret{transform:rotate(-90deg)}
+.read-more.collapsed .read-more-body{display:none}
+.read-more-body{padding:10px 0 2px 0}
+.read-more-body ul{list-style:none;padding:0;margin:0}
+.read-more-body li{
+  padding:6px 0;border-bottom:1px solid var(--border-lt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.8rem;line-height:1.6;
+}
+.read-more-body li:last-child{border-bottom:none}
+.read-more-body li a{color:var(--qcom);font-weight:600}
+.read-more-body li .rm-desc{color:var(--text-dim);margin-left:4px}
+.read-more-body li .rm-type{
+  display:inline-block;font-size:0.62rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.5px;padding:2px 6px;border-radius:3px;margin-right:6px;
+  background:var(--gold-bg);color:var(--gold);vertical-align:middle;
+}
+
+/* ===============================================
    DCF MODULE
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .dcf-module{
   background:var(--card);border:1px solid var(--border);border-radius:10px;
   padding:36px 32px;margin-top:44px;box-shadow:var(--shadow);
@@ -314,7 +450,7 @@ strong{color:var(--text);font-weight:700}
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   color:var(--text-dim);font-size:0.82rem;margin-bottom:28px;letter-spacing:0.3px;
 }
-.dcf-section{margin-bottom:26px}
+.dcf-section{margin-bottom:30px}
 .dcf-section:last-child{margin-bottom:0}
 .dcf-section h3{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
@@ -330,8 +466,9 @@ strong{color:var(--text);font-weight:700}
 .dcf-section li{margin-bottom:6px}
 .dcf-formula{
   background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
-  padding:18px 22px;margin:14px 0;font-family:'SF Mono',Menlo,Consolas,monospace;
-  font-size:0.82rem;color:var(--formula);line-height:2;overflow-x:auto;
+  padding:18px 22px;margin:14px 0;
+  font-size:0.92rem;color:var(--formula);line-height:2;overflow-x:auto;
+  text-align:center;
 }
 .dcf-table{
   width:100%;border-collapse:collapse;margin:14px 0;
@@ -370,9 +507,83 @@ strong{color:var(--text);font-weight:700}
 .dcf-callout.red{background:var(--red-bg);border-left:3px solid var(--red);color:var(--text-sec)}
 .dcf-callout.amber{background:var(--amber-bg);border-left:3px solid var(--gold);color:var(--text-sec)}
 
-/* ═══════════════════════════════════════════════
+/* Sensitivity table */
+.sensitivity-table{
+  width:100%;border-collapse:collapse;margin:14px 0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;
+}
+.sensitivity-table th{
+  padding:8px 10px;background:var(--bg-alt);color:var(--text-dim);
+  font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;
+  border:1px solid var(--border);text-align:center;
+}
+.sensitivity-table td{
+  padding:8px 10px;border:1px solid var(--border-lt);text-align:center;
+  font-variant-numeric:tabular-nums;color:var(--text-sec);
+}
+.sensitivity-table td.highlight{color:var(--gold);font-weight:700;background:var(--gold-bg)}
+.sensitivity-table .corner{background:transparent;border-color:transparent}
+
+/* ===============================================
+   GLOSSARY
+   =============================================== */
+.glossary{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:32px;margin-top:44px;box-shadow:var(--shadow);
+  transition:background 0.35s ease, border-color 0.35s ease;
+}
+.glossary h2{font-size:1.3rem;margin-bottom:4px;font-weight:400;font-style:italic}
+.glossary .glossary-subtitle{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--text-dim);font-size:0.82rem;margin-bottom:20px;letter-spacing:0.3px;
+}
+.glossary-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;
+}
+.glossary-item{
+  display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-lt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.8rem;line-height:1.6;
+}
+.glossary-item .gl-term{
+  font-weight:700;color:var(--text);white-space:nowrap;min-width:90px;
+}
+.glossary-item .gl-def{color:var(--text-sec)}
+
+/* ===============================================
+   RESOURCES
+   =============================================== */
+.resources{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:32px;margin-top:28px;box-shadow:var(--shadow);
+  transition:background 0.35s ease, border-color 0.35s ease;
+}
+.resources h2{font-size:1.3rem;margin-bottom:4px;font-weight:400;font-style:italic}
+.resources .resources-subtitle{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--text-dim);font-size:0.82rem;margin-bottom:22px;letter-spacing:0.3px;
+}
+.resource-category{margin-bottom:20px}
+.resource-category:last-child{margin-bottom:0}
+.resource-category h3{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;font-weight:700;color:var(--gold);margin-bottom:8px;
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.resource-list{list-style:none;padding:0;margin:0}
+.resource-list li{
+  padding:8px 0;border-bottom:1px solid var(--border-lt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.82rem;line-height:1.7;color:var(--text-sec);
+}
+.resource-list li:last-child{border-bottom:none}
+.resource-list li a{color:var(--qcom);font-weight:600}
+.resource-list li .res-author{color:var(--text-dim)}
+
+/* ===============================================
    FOOTER
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 .page-footer{
   text-align:center;padding:36px 24px 44px;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
@@ -381,9 +592,9 @@ strong{color:var(--text);font-weight:700}
   transition:border-color 0.35s ease;
 }
 
-/* ═══════════════════════════════════════════════
+/* ===============================================
    RESPONSIVE
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 @media(max-width:700px){
   .col-header-row,.metric-row{
     grid-template-columns:1fr 42px;gap:4px;
@@ -396,14 +607,19 @@ strong{color:var(--text);font-weight:700}
   .metric-row .btn-info{grid-row:1;grid-column:2;align-self:start;margin-top:2px}
   .metric-row .metric-name{grid-column:1;grid-row:1}
   .dcf-module{padding:22px 16px}
+  .glossary{padding:22px 16px}
+  .resources{padding:22px 16px}
   .learning-panel{padding:18px 16px}
+  .theory-block{padding:20px 18px}
   .page-header h1{font-size:1.4rem}
+  .glossary-grid{grid-template-columns:1fr}
+  .toc-body{flex-direction:column;align-items:center}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════ HEADER ═══════════ -->
+<!-- =========== HEADER =========== -->
 <header class="page-header">
   <h1>Semiconductor Fundamentals</h1>
   <div class="subtitle"><span class="tk-intc">INTC</span> &nbsp;vs&nbsp; <span class="tk-amd">AMD</span> &nbsp;vs&nbsp; <span class="tk-qcom">QCOM</span></div>
@@ -418,16 +634,82 @@ strong{color:var(--text);font-weight:700}
   </div>
 </header>
 
+<!-- =========== TABLE OF CONTENTS =========== -->
+<nav class="toc" id="toc">
+  <div class="toc-header" onclick="document.getElementById('toc').classList.toggle('collapsed')">
+    <h3>Contents</h3>
+    <span class="toc-caret">&#9662;</span>
+  </div>
+  <div class="toc-body">
+    <a href="#sec-a"><span class="toc-num">I.</span> Market Valuation &amp; Growth</a>
+    <a href="#sec-b"><span class="toc-num">II.</span> The Profitability Hierarchy</a>
+    <a href="#sec-c"><span class="toc-num">III.</span> Cash Flow &amp; Capital Allocation</a>
+    <a href="#sec-d"><span class="toc-num">IV.</span> Valuation Multiples</a>
+    <a href="#sec-e"><span class="toc-num">V.</span> Capital Efficiency &amp; Returns</a>
+    <a href="#sec-f"><span class="toc-num">VI.</span> DuPont Analysis</a>
+    <a href="#dcf-module"><span class="toc-num">VII.</span> Discounted Cash Flow</a>
+    <a href="#glossary"><span class="toc-num">VIII.</span> Glossary</a>
+    <a href="#resources"><span class="toc-num">IX.</span> Resources</a>
+  </div>
+</nav>
+
 <div class="container">
 
-<!-- ═══════════ SECTION A: SIZE & GROWTH ═══════════ -->
+<!-- =========================================================================
+     SECTION I: MARKET VALUATION & GROWTH
+     ========================================================================= -->
 <div class="section" id="sec-a">
   <div class="section-header" onclick="toggleSection('sec-a')">
     <div class="accent-bar" style="background:linear-gradient(180deg,var(--intc),var(--amd))"></div>
-    <h2>Size &amp; Growth</h2>
+    <h2>I. Market Valuation &amp; Growth</h2>
     <span class="caret">&#9662;</span>
   </div>
   <div class="section-body">
+
+    <!-- Theory Block -->
+    <div class="theory-block">
+      <p>Before analyzing any company, we must answer two foundational questions: <em>how large is this business?</em> and <em>how fast is it expanding?</em> The two primary measures&mdash;<span class="kw">market capitalization</span> and <span class="kw">revenue growth</span>&mdash;address these questions from different angles. Market cap reflects the collective judgment of all market participants about a company's total equity value, while revenue growth measures the rate at which the underlying business is scaling.</p>
+
+      <p>Understanding growth quantitatively requires a bit of care. A single year-over-year figure captures a snapshot, but the <strong>compound annual growth rate</strong> (CAGR) provides a smoothed, annualized measure of growth over multiple periods&mdash;removing the noise of any single year.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>Market Capitalization</strong> is defined as:</p>
+          <div class="formula-block">
+            \[ \text{Market Cap} = P \times N \]
+          </div>
+          <div class="var-def">
+            where \( P \) is the current share price and \( N \) is the total number of shares outstanding.
+          </div>
+
+          <p style="margin-top:16px"><strong>Year-over-Year Growth Rate</strong> for any metric \( X \):</p>
+          <div class="formula-block">
+            \[ g_{\text{YoY}} = \frac{X_t - X_{t-1}}{X_{t-1}} \times 100\% \]
+          </div>
+
+          <p style="margin-top:16px"><strong>Compound Annual Growth Rate (CAGR)</strong> smooths growth over \( n \) years:</p>
+          <div class="formula-block">
+            \[ \text{CAGR} = \left(\frac{X_n}{X_0}\right)^{\frac{1}{n}} - 1 \]
+          </div>
+          <div class="var-def">
+            where \( X_0 \) is the starting value, \( X_n \) is the ending value, and \( n \) is the number of years. CAGR is the constant annual rate that would transform \( X_0 \) into \( X_n \) over \( n \) periods.
+          </div>
+
+          <p style="margin-top:16px"><strong>The Rule of 72</strong> provides a quick mental shortcut: at a constant growth rate \( g \)% per year, a quantity approximately doubles in \( 72 / g \) years. This follows from solving \( 2 = (1 + g)^n \), which yields \( n = \ln 2 / \ln(1+g) \approx 72/g \) for small \( g \) (expressed as a percentage).</p>
+          <div class="formula-block">
+            \[ n_{\text{double}} \approx \frac{72}{g\%} \]
+          </div>
+          <div class="var-def">
+            For example, AMD's revenue growing at ~34% would imply a doubling time of roughly \( 72/34 \approx 2.1 \) years if sustained&mdash;an extraordinary pace.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Example: Comparison Table -->
     <div class="table-card">
       <div class="col-header-row">
         <span>Metric</span>
@@ -448,19 +730,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Market capitalization</strong> is the <span class="kw">total market value</span> of a company's outstanding shares. It represents what the market collectively believes the <em>entire</em> company is worth at the current share price.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Market Cap = <strong>Share Price</strong> &times; <strong>Shares Outstanding</strong></div></div>
+          <div class="lp-content"><strong>Market capitalization</strong> is the <span class="kw">total market value</span> of a company's outstanding shares. It represents what the market collectively believes the <em>entire</em> company is worth at the current share price. Formally: \( \text{Market Cap} = P \times N \).</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">A larger market cap generally signals a more <span class="kw">established and stable</span> business. Companies above <strong>$200B</strong> are considered <em>mega-cap</em> and tend to be industry leaders. However, a larger market cap <span class="kw-red">does not necessarily mean better value</span> &mdash; it reflects market sentiment, not intrinsic worth.</div>
+          <div class="lp-content">A larger market cap generally signals a more <span class="kw">established and stable</span> business. Companies above <strong>$200B</strong> are considered <em>mega-cap</em> and tend to be industry leaders. However, a larger market cap <span class="kw-red">does not necessarily mean better value</span>&mdash;it reflects market sentiment, not intrinsic worth.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-amd">AMD</span> leads at <strong>$733.28B</strong>, followed by <span class="tag-intc">INTC</span> at <strong>$582.66B</strong>. <span class="tag-qcom">QCOM</span> at <strong>$210.88B</strong> is notably smaller despite superior profitability &mdash; suggesting the market is pricing in AMD's growth trajectory and Intel's foundry ambitions more aggressively than QCOM's current cash generation.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-amd">AMD</span> leads at <strong>$733.28B</strong>, followed by <span class="tag-intc">INTC</span> at <strong>$582.66B</strong>. <span class="tag-qcom">QCOM</span> at <strong>$210.88B</strong> is notably smaller despite superior profitability&mdash;suggesting the market is pricing in AMD's growth trajectory and Intel's foundry ambitions more aggressively than QCOM's current cash generation.</div></div>
         </div>
       </div>
 
@@ -475,15 +753,11 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Revenue</strong> is the <span class="kw">total income</span> generated from selling goods or services <em>before</em> any expenses are deducted. It is often called the <span class="kw">&ldquo;top line&rdquo;</span> because it sits at the top of the income statement.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Revenue = <strong>Units Sold</strong> &times; <strong>Average Price</strong> <span style="color:var(--text-dim)">(simplified)</span></div></div>
+          <div class="lp-content"><strong>Revenue</strong> (or <em>sales</em>) is the <span class="kw">total income</span> generated from selling goods or services <em>before</em> any expenses are deducted. It is often called the <span class="kw">&ldquo;top line&rdquo;</span> because it sits at the top of the income statement.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">Higher revenue indicates <span class="kw">larger business scale</span>. But revenue alone tells you <em>nothing</em> about profitability &mdash; a company can have massive revenue and still <span class="kw-red">lose money</span> if costs exceed income.</div>
+          <div class="lp-content">Higher revenue indicates <span class="kw">larger business scale</span>. But revenue alone tells you <em>nothing</em> about profitability&mdash;a company can have massive revenue and still <span class="kw-red">lose money</span> if costs exceed income.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
@@ -502,11 +776,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Revenue Growth YoY</strong> is the <span class="kw">percentage change in revenue</span> compared to the same period one year ago. It measures how quickly a company is <em>expanding</em> (or contracting) its top line.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Revenue Growth = (<strong>Current Revenue</strong> &minus; <strong>Prior Year Revenue</strong>) / <strong>Prior Year Revenue</strong> &times; 100</div></div>
+          <div class="lp-content"><strong>Revenue Growth YoY</strong> is the <span class="kw">percentage change in revenue</span> compared to the same period one year ago: \( g = (R_t - R_{t-1}) / R_{t-1} \). It measures how quickly a company is <em>expanding</em> (or contracting) its top line.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -517,19 +787,92 @@ strong{color:var(--text);font-weight:700}
           <div class="lp-content"><div class="insight"><span class="tag-amd">AMD</span>&rsquo;s <span class="kw-green">+34.11%</span> growth is exceptional, fueled by data center GPU/CPU gains. <span class="tag-intc">INTC</span>&rsquo;s +7.18% shows modest recovery. <span class="tag-qcom">QCOM</span>&rsquo;s <span class="kw-red">&minus;3.46%</span> decline reflects smartphone market headwinds.</div></div>
         </div>
       </div>
-
     </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Course</span><a href="https://www.coursera.org/learn/financial-markets-global" target="_blank" rel="noopener">Financial Markets</a> <span class="rm-desc">&mdash; Robert Shiller (Yale). Module 3 covers stocks, bonds, market capitalization, and corporate fundamentals.</span></li>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">Damodaran Industry Data</a> <span class="rm-desc">&mdash; Revenue, growth rates, and market cap breakdowns by industry sector, updated annually.</span></li>
+          <li><span class="rm-type">Book</span>Brealey, Myers &amp; Allen, <em>Principles of Corporate Finance</em>, 14th ed. <span class="rm-desc">&mdash; Chapters 1&ndash;3 cover the foundations of corporate value and growth.</span></li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ═══════════ SECTION B: PROFITABILITY ═══════════ -->
+<!-- =========================================================================
+     SECTION II: THE PROFITABILITY HIERARCHY
+     ========================================================================= -->
 <div class="section" id="sec-b">
   <div class="section-header" onclick="toggleSection('sec-b')">
     <div class="accent-bar" style="background:linear-gradient(180deg,var(--qcom),var(--gold))"></div>
-    <h2>Profitability</h2>
+    <h2>II. The Profitability Hierarchy</h2>
     <span class="caret">&#9662;</span>
   </div>
   <div class="section-body">
+
+    <!-- Theory Block -->
+    <div class="theory-block">
+      <p>Profitability is not a single number&mdash;it is a <span class="kw">layered structure</span>. The income statement records a series of subtractions, each revealing a different dimension of how efficiently a company converts revenue into profit. Understanding this hierarchy is essential: two companies with identical revenue can have vastly different profitabilities depending on their cost structures, business models, and capital intensity.</p>
+
+      <p>The key idea is the <strong>profitability waterfall</strong>&mdash;starting from total revenue and progressively subtracting different categories of costs to arrive at increasingly refined measures of profit.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>The Income Statement Waterfall:</strong></p>
+          <div class="waterfall">
+            <div class="wf-bold">Revenue (Sales)</div>
+            <div class="wf-indent">&minus; Cost of Goods Sold (COGS)</div>
+            <div class="wf-line"></div>
+            <div class="wf-bold">= Gross Profit</div>
+            <div class="wf-indent">&minus; Operating Expenses (R&amp;D + SG&amp;A)</div>
+            <div class="wf-line"></div>
+            <div class="wf-bold">= Operating Income (EBIT)</div>
+            <div class="wf-indent">&minus; Interest Expense</div>
+            <div class="wf-indent">&minus; Taxes</div>
+            <div class="wf-line"></div>
+            <div class="wf-bold">= Net Income</div>
+          </div>
+
+          <p style="margin-top:16px">Each level of profit defines a corresponding <strong>margin</strong>&mdash;the profit expressed as a percentage of revenue:</p>
+
+          <div class="formula-block">
+            \[ \text{Gross Margin} = \frac{\text{Revenue} - \text{COGS}}{\text{Revenue}} = \frac{\text{Gross Profit}}{\text{Revenue}} \]
+          </div>
+
+          <div class="formula-block">
+            \[ \text{Operating Margin} = \frac{\text{EBIT}}{\text{Revenue}} \]
+          </div>
+
+          <div class="formula-block">
+            \[ \text{Net Profit Margin} = \frac{\text{Net Income}}{\text{Revenue}} \]
+          </div>
+
+          <div class="var-def">
+            The <em>spread</em> between margins reveals where costs are concentrated. For Intel, the gap between gross margin (35.43%) and operating margin (1.96%) is 33.47 percentage points&mdash;nearly all of its gross profit is consumed by operating expenses, primarily R&amp;D ($16B+) and the cost of maintaining fabrication facilities.
+          </div>
+
+          <p style="margin-top:16px"><strong>Earnings Per Share (EPS)</strong> distributes net income to shareholders on a per-share basis:</p>
+          <div class="formula-block">
+            \[ \text{EPS} = \frac{\text{Net Income}}{\text{Weighted Average Shares Outstanding}} \]
+          </div>
+          <div class="var-def">
+            <em>Basic</em> EPS uses actual shares outstanding. <em>Diluted</em> EPS includes the potential dilution from stock options, convertible bonds, and other instruments. Diluted EPS is always &le; Basic EPS.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Example: Comparison Table -->
     <div class="table-card">
       <div class="col-header-row">
         <span>Metric</span>
@@ -550,11 +893,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Gross profit</strong> is <span class="kw">revenue minus the direct cost</span> of producing goods or services (<strong>COGS</strong>). It represents the profit available <em>before</em> operating expenses like R&amp;D and overhead.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Gross Profit = <strong>Revenue</strong> &minus; <strong>Cost of Goods Sold</strong> (COGS)</div></div>
+          <div class="lp-content"><strong>Gross profit</strong> is \( \text{Revenue} - \text{COGS} \). It represents the profit available <em>before</em> operating expenses like R&amp;D and overhead. COGS includes raw materials, manufacturing costs, and direct labor.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -577,11 +916,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Gross margin</strong> is the <span class="kw">percentage of revenue retained</span> after subtracting direct production costs. It measures <em>production efficiency</em> and <span class="kw">pricing power</span>.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Gross Margin = (<strong>Gross Profit</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+          <div class="lp-content"><strong>Gross margin</strong> = \( \text{Gross Profit} / \text{Revenue} \). It measures <em>production efficiency</em> and <span class="kw">pricing power</span>&mdash;the percentage of each revenue dollar retained after direct costs.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -604,11 +939,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Operating income</strong> (also called <span class="kw">EBIT</span>) is the profit remaining after subtracting <strong>operating expenses</strong> (R&amp;D, SG&amp;A) from gross profit. It measures <em>core business profitability</em> before interest and taxes.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Operating Income = <strong>Gross Profit</strong> &minus; <strong>Operating Expenses</strong> (R&amp;D + SG&amp;A + Other)</div></div>
+          <div class="lp-content"><strong>Operating income</strong> (also called <span class="kw">EBIT</span>&mdash;Earnings Before Interest and Taxes) is \( \text{Gross Profit} - \text{Operating Expenses} \). It measures <em>core business profitability</em> before financing and tax effects.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -616,7 +947,7 @@ strong{color:var(--text);font-weight:700}
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> dominates at <strong>$11.39B</strong>. <span class="tag-amd">AMD</span> earns $3.69B. <span class="tag-intc">INTC</span> barely breaks even at $1.06B despite having the <em>highest</em> revenue &mdash; its massive R&amp;D ($16B+) and fab costs consume nearly all gross profit.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> dominates at <strong>$11.39B</strong>. <span class="tag-amd">AMD</span> earns $3.69B. <span class="tag-intc">INTC</span> barely breaks even at $1.06B despite having the <em>highest</em> revenue&mdash;its massive R&amp;D ($16B+) and fab costs consume nearly all gross profit.</div></div>
         </div>
       </div>
 
@@ -631,19 +962,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Operating margin</strong> expresses operating income as a <span class="kw">percentage of revenue</span>. It shows how many cents of profit a company keeps from each dollar of revenue from its <em>core operations</em>.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Operating Margin = (<strong>Operating Income</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+          <div class="lp-content"><strong>Operating margin</strong> = \( \text{EBIT} / \text{Revenue} \). It shows how many cents of operating profit a company keeps from each dollar of revenue, stripping out interest and tax effects.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">Higher is better. Above <strong>20%</strong> is considered <span class="kw-green">excellent</span>. This metric strips out interest and tax effects, focusing purely on <span class="kw">operational efficiency</span>.</div>
+          <div class="lp-content">Higher is better. Above <strong>20%</strong> is considered <span class="kw-green">excellent</span>. This metric focuses purely on <span class="kw">operational efficiency</span>&mdash;the management's ability to control costs relative to sales.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span>&rsquo;s <span class="kw-green">25.61%</span> is excellent and industry-leading. <span class="tag-amd">AMD</span> at 10.66% is improving as it scales. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">1.96%</span> is alarming for a company of its size &mdash; nearly all revenue is consumed by costs.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span>&rsquo;s <span class="kw-green">25.61%</span> is excellent and industry-leading. <span class="tag-amd">AMD</span> at 10.66% is improving as it scales. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">1.96%</span> is alarming for a company of its size&mdash;nearly all revenue is consumed by costs.</div></div>
         </div>
       </div>
 
@@ -658,19 +985,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Net profit margin</strong> is the percentage of revenue that becomes <span class="kw">actual profit</span> after <em>all</em> expenses &mdash; operating costs, interest, and taxes. It is the ultimate <span class="kw">&ldquo;bottom line&rdquo;</span> efficiency measure.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Net Profit Margin = (<strong>Net Income</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+          <div class="lp-content"><strong>Net profit margin</strong> = \( \text{Net Income} / \text{Revenue} \). The percentage of revenue that becomes <span class="kw">actual profit</span> after <em>all</em> expenses. It is the ultimate <span class="kw">&ldquo;bottom line&rdquo;</span> efficiency measure.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Positive margin</span> means the company is profitable. Higher margin = more efficient. <span class="kw-red">Negative margin</span> means the company is <strong>losing money</strong>. Always compare within the same industry.</div>
+          <div class="lp-content"><span class="kw-green">Positive margin</span> means the company is profitable. <span class="kw-red">Negative margin</span> means the company is <strong>losing money</strong>. Always compare within the same industry&mdash;software margins differ vastly from semiconductor margins.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>22.31%</strong> &mdash; earning ~$0.22 per revenue dollar. <span class="tag-amd">AMD</span> at <strong>12.51%</strong> is solidly profitable. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;5.90%</span> means it is losing money: approximately <strong>&minus;$3.17B</strong> in net losses on $53.76B revenue.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>22.31%</strong>&mdash;earning ~$0.22 per revenue dollar. <span class="tag-amd">AMD</span> at <strong>12.51%</strong> is solidly profitable. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;5.90%</span> means it is losing money: approximately <strong>&minus;$3.17B</strong> in net losses on $53.76B revenue.</div></div>
         </div>
       </div>
 
@@ -685,34 +1008,105 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Earnings Per Share</strong> is the portion of a company's profit allocated to <span class="kw">each outstanding share</span> of common stock. <em>Basic</em> EPS uses actual shares outstanding (not diluted by options or convertibles).</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">EPS = <strong>Net Income</strong> / <strong>Weighted Average Shares Outstanding</strong></div></div>
+          <div class="lp-content"><strong>Earnings Per Share</strong> = \( \text{Net Income} / \text{Shares Outstanding} \). The portion of profit allocated to <span class="kw">each outstanding share</span> of common stock.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">Higher EPS means <span class="kw-green">more profit per share</span>. <span class="kw-red">Negative EPS</span> means the company is losing money. Compare EPS <em>growth trends</em> over time rather than just absolute values across companies.</div>
+          <div class="lp-content">Higher EPS means <span class="kw-green">more profit per share</span>. <span class="kw-red">Negative EPS</span> means the company is losing money. Compare EPS <em>growth trends</em> over time rather than absolute values across companies (share counts differ).</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
           <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>$9.35</strong> per share. <span class="tag-amd">AMD</span> earns $2.67. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$0.60</span> confirms it is currently unprofitable on a per-share basis. QCOM earns <strong>3.5&times;</strong> more per share than AMD.</div></div>
         </div>
       </div>
-
     </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">Operating and Net Margins by Industry</a> <span class="rm-desc">&mdash; Damodaran's dataset of profit margins across all industries, updated annually.</span></li>
+          <li><span class="rm-type">Lecture</span><a href="https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/" target="_blank" rel="noopener">MIT 15.401 &mdash; Equities</a> <span class="rm-desc">&mdash; Prof. Andrew Lo covers equity valuation fundamentals including earnings analysis.</span></li>
+          <li><span class="rm-type">Book</span>Damodaran, <em>Investment Valuation</em>, 3rd ed. <span class="rm-desc">&mdash; Chapters 9&ndash;10 cover measuring earnings and estimating cash flows.</span></li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ═══════════ SECTION C: CASH FLOW ═══════════ -->
+<!-- =========================================================================
+     SECTION III: CASH FLOW & CAPITAL ALLOCATION
+     ========================================================================= -->
 <div class="section" id="sec-c">
   <div class="section-header" onclick="toggleSection('sec-c')">
     <div class="accent-bar" style="background:linear-gradient(180deg,var(--green),var(--qcom))"></div>
-    <h2>Cash Flow</h2>
+    <h2>III. Cash Flow &amp; Capital Allocation</h2>
     <span class="caret">&#9662;</span>
   </div>
   <div class="section-body">
+
+    <!-- Theory Block -->
+    <div class="theory-block">
+      <p>If the income statement tells you about <em>accounting</em> profitability, the cash flow statement tells you about <span class="kw">economic reality</span>. Accounting earnings can be distorted by non-cash charges (depreciation, amortization, stock-based compensation) and accrual timing. Cash flow strips away these artifacts and answers the critical question: <em>how much actual cash did the business generate?</em></p>
+
+      <p>The most important metric in this section&mdash;and arguably in all of fundamental analysis&mdash;is <span class="kw">Free Cash Flow (FCF)</span>. It is the cash left over after a company has funded both its operations and its capital investments. FCF is the cash available for dividends, share buybacks, debt reduction, and acquisitions. Warren Buffett has called it <em>&ldquo;owner earnings&rdquo;</em>&mdash;the true economic profit belonging to shareholders.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>The Free Cash Flow Bridge</strong> reconciles net income to actual cash generation:</p>
+          <div class="waterfall">
+            <div class="wf-bold">Net Income</div>
+            <div class="wf-indent">+ Depreciation &amp; Amortization (non-cash)</div>
+            <div class="wf-indent">+ Stock-Based Compensation (non-cash)</div>
+            <div class="wf-indent">&plusmn; Changes in Working Capital</div>
+            <div class="wf-line"></div>
+            <div class="wf-bold">= Operating Cash Flow (OCF)</div>
+            <div class="wf-indent">&minus; Capital Expenditures (CapEx)</div>
+            <div class="wf-line"></div>
+            <div class="wf-bold">= Free Cash Flow (FCF)</div>
+          </div>
+
+          <p style="margin-top:16px">Formally:</p>
+          <div class="formula-block">
+            \[ \text{OCF} = \text{Net Income} + \text{D\&A} + \text{SBC} \pm \Delta\text{WC} \]
+          </div>
+          <div class="formula-block">
+            \[ \text{FCF} = \text{OCF} - \text{CapEx} \]
+          </div>
+
+          <div class="var-def">
+            where \( \text{D\&A} \) = depreciation and amortization, \( \text{SBC} \) = stock-based compensation, and \( \Delta\text{WC} \) = change in working capital (increase in WC consumes cash; decrease in WC releases cash).
+          </div>
+
+          <p style="margin-top:16px"><strong>Capital Intensity Ratio</strong> measures how much of every revenue dollar goes to capital investment:</p>
+          <div class="formula-block">
+            \[ \text{Capital Intensity} = \frac{\text{CapEx}}{\text{Revenue}} \]
+          </div>
+          <div class="var-def">
+            Intel's ratio is \( \$13.10\text{B} / \$53.76\text{B} \approx 24.4\% \)&mdash;nearly a quarter of all revenue goes to building and upgrading fabs. Compare AMD at \( 2.8\% \) and QCOM at \( 4.0\% \), reflecting the capital-light fabless model.
+          </div>
+
+          <p style="margin-top:16px"><strong>FCF Yield</strong> relates free cash flow to market valuation:</p>
+          <div class="formula-block">
+            \[ \text{FCF Yield} = \frac{\text{FCF}}{\text{Market Cap}} \times 100\% \]
+          </div>
+          <div class="var-def">
+            FCF yield is the inverse of P/FCF. It can be interpreted as the <em>cash return</em> an investor earns on the current market price if all FCF were distributed. QCOM's FCF yield = \( \$12.50\text{B} / \$210.88\text{B} \approx 5.9\% \), which is attractive.
+          </div>
+
+          <p style="margin-top:16px"><strong>Why OCF can exceed Net Income:</strong> When a company reports a net loss but positive operating cash flow (as Intel does), it usually means large <em>non-cash charges</em>&mdash;particularly depreciation on expensive physical assets&mdash;are being added back. Intel's fabs depreciate by billions annually, which reduces reported earnings but does not consume cash.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Example: Comparison Table -->
     <div class="table-card">
       <div class="col-header-row">
         <span>Metric</span>
@@ -733,19 +1127,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Operating cash flow</strong> (OCF) is the <span class="kw">cash generated from core business operations</span>. Unlike net income, it excludes non-cash accounting items like depreciation and reflects <em>actual cash movement</em>.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">OCF = <strong>Net Income</strong> + <strong>Non-Cash Charges</strong> (Depreciation, Amortization) &plusmn; <strong>Changes in Working Capital</strong></div></div>
+          <div class="lp-content"><strong>Operating cash flow</strong> is the <span class="kw">cash generated from core business operations</span>. Unlike net income, it excludes non-cash items and reflects <em>actual cash movement</em>: \( \text{OCF} = \text{NI} + \text{D\&A} + \text{SBC} \pm \Delta\text{WC} \).</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Positive and growing</span> OCF is essential &mdash; it funds CapEx, dividends, buybacks, and debt repayment. When OCF exceeds net income, it generally indicates <span class="kw">high-quality earnings</span>.</div>
+          <div class="lp-content"><span class="kw-green">Positive and growing</span> OCF is essential&mdash;it funds CapEx, dividends, buybacks, and debt repayment. When OCF exceeds net income, it generally indicates <span class="kw">high-quality earnings</span>.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>$14.29B</strong>. <span class="tag-intc">INTC</span> generates <strong>$9.98B</strong> &mdash; positive despite a net loss, because large <em>depreciation add-backs</em> from fab assets restore cash. <span class="tag-amd">AMD</span> at $7.71B.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>$14.29B</strong>. <span class="tag-intc">INTC</span> generates <strong>$9.98B</strong>&mdash;positive despite a net loss, because large <em>depreciation add-backs</em> from fab assets restore cash. <span class="tag-amd">AMD</span> at $7.71B.</div></div>
         </div>
       </div>
 
@@ -760,11 +1150,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Capital expenditure</strong> (CapEx) is money spent on acquiring, maintaining, or upgrading <span class="kw">physical assets</span> &mdash; factories, equipment, technology. Shown as negative because it is a <em>cash outflow</em>.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">CapEx = Purchases of <strong>Property, Plant &amp; Equipment</strong> <span style="color:var(--text-dim)">(from cash flow statement)</span></div></div>
+          <div class="lp-content"><strong>Capital expenditure</strong> (CapEx) is money spent on <span class="kw">physical assets</span>&mdash;factories, equipment, technology. Shown as negative because it is a <em>cash outflow</em>. Capital intensity = \( \text{CapEx} / \text{Revenue} \).</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -772,7 +1158,7 @@ strong{color:var(--text);font-weight:700}
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$13.10B</span> is massive &mdash; nearly <strong>24%</strong> of revenue goes to building and upgrading fabs. <span class="tag-amd">AMD</span> at &minus;$974M and <span class="tag-qcom">QCOM</span> at &minus;$1.78B are far lower as <strong>fabless</strong> companies outsourcing to TSMC.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$13.10B</span> is massive&mdash;nearly <strong>24%</strong> of revenue goes to building and upgrading fabs. <span class="tag-amd">AMD</span> at &minus;$974M and <span class="tag-qcom">QCOM</span> at &minus;$1.78B are far lower as <strong>fabless</strong> companies outsourcing manufacturing to TSMC.</div></div>
         </div>
       </div>
 
@@ -787,34 +1173,95 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Free cash flow</strong> (FCF) is the <span class="kw">cash left over</span> after a company has paid for operations <em>and</em> capital expenditures. It is the cash available for <strong>dividends, buybacks, debt reduction,</strong> or <strong>acquisitions</strong>.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">FCF = <strong>Operating Cash Flow</strong> &minus; <strong>Capital Expenditures</strong></div></div>
+          <div class="lp-content"><strong>Free cash flow</strong> = \( \text{OCF} - \text{CapEx} \). The <span class="kw">cash left over</span> after funding operations <em>and</em> capital investments. This is the cash available for <strong>dividends, buybacks, debt reduction,</strong> or <strong>acquisitions</strong>.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Positive FCF</span> is critical for financial health and shareholder returns. <span class="kw-red">Negative FCF</span> means the company is <strong>burning cash</strong>. Consistently high FCF is one of the most important indicators of a <span class="kw">quality business</span>.</div>
+          <div class="lp-content"><span class="kw-green">Positive FCF</span> is critical for financial health. <span class="kw-red">Negative FCF</span> means the company is <strong>burning cash</strong>. Consistently high FCF is one of the most important indicators of a <span class="kw">quality business</span>.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">$12.50B</span> &mdash; enormous cash generation. <span class="tag-amd">AMD</span> at $6.74B benefits from its fabless model. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$3.12B</span> is deeply negative because massive CapEx ($13.10B) exceeds operating cash flow ($9.98B).</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">$12.50B</span>&mdash;enormous cash generation. <span class="tag-amd">AMD</span> at $6.74B benefits from its fabless model. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$3.12B</span> is deeply negative because massive CapEx ($13.10B) exceeds operating cash flow ($9.98B).</div></div>
         </div>
       </div>
-
     </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Lecture</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm" target="_blank" rel="noopener">Damodaran &mdash; Session 7: Estimating Cash Flows</a> <span class="rm-desc">&mdash; How to go from financial statements to cash flows for valuation.</span></li>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">Free Cash Flow to Firm by Industry</a> <span class="rm-desc">&mdash; Damodaran's FCFF and reinvestment rate data across all sectors.</span></li>
+          <li><span class="rm-type">Book</span>Brealey, Myers &amp; Allen, <em>Principles of Corporate Finance</em>, 14th ed. <span class="rm-desc">&mdash; Chapter 6 covers how to estimate cash flows for investment decisions.</span></li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ═══════════ SECTION D: VALUATION ═══════════ -->
+<!-- =========================================================================
+     SECTION IV: VALUATION MULTIPLES
+     ========================================================================= -->
 <div class="section" id="sec-d">
   <div class="section-header" onclick="toggleSection('sec-d')">
     <div class="accent-bar" style="background:linear-gradient(180deg,var(--gold),#c27a1a)"></div>
-    <h2>Valuation</h2>
+    <h2>IV. Valuation Multiples</h2>
     <span class="caret">&#9662;</span>
   </div>
   <div class="section-body">
+
+    <!-- Theory Block -->
+    <div class="theory-block">
+      <p>Valuation multiples are the most widely used tools in equity analysis. The core idea is simple: rather than building a full discounted cash flow model, we compare a company's market price to a fundamental measure of its business (earnings, sales, book value, or cash flow). This produces a <span class="kw">ratio</span> that can be compared across companies, industries, and time periods.</p>
+
+      <p>However, multiples are not just shortcuts&mdash;they are <em>mathematically grounded</em> in the same theory as DCF. A company's P/E ratio, for example, is not arbitrary: it can be algebraically derived from the Gordon Growth Model, and its value is determined by the company's growth rate, cost of equity, and payout ratio. Understanding this connection transforms multiples from blunt tools into precise instruments.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>Equity vs. Enterprise Value:</strong> A critical distinction. <em>Equity value</em> (market cap) measures what shareholders own. <em>Enterprise value</em> (EV) measures the total value of the business to all capital providers&mdash;both equity and debt holders:</p>
+          <div class="formula-block">
+            \[ \text{EV} = \text{Market Cap} + \text{Total Debt} - \text{Cash} \]
+          </div>
+          <div class="var-def">
+            Equity multiples (P/E, P/B, P/S) compare equity value to equity-level measures. Enterprise multiples (EV/EBITDA, EV/Sales) compare total firm value to pre-debt measures. Mixing them (e.g., Market Cap / EBITDA) is a common error.
+          </div>
+
+          <p style="margin-top:16px"><strong>The P/E Ratio&mdash;Derived from Fundamentals:</strong></p>
+          <p>Starting from the Gordon Growth Model for a stable-growth firm: \( P_0 = \frac{D_1}{r_e - g} \). Since dividends can be expressed as \( D_1 = \text{EPS}_1 \times \text{Payout Ratio} \), we can write:</p>
+          <div class="formula-block">
+            \[ \frac{P_0}{\text{EPS}_1} = \frac{\text{Payout Ratio}}{r_e - g} \]
+          </div>
+          <div class="var-def">
+            This reveals that P/E is a function of three variables: the <strong>payout ratio</strong>, the <strong>cost of equity</strong> \( r_e \), and the <strong>expected growth rate</strong> \( g \). A company <em>deserves</em> a higher P/E when it has higher growth, lower risk (lower \( r_e \)), or a higher payout ratio. This explains why AMD (high growth) trades at a higher P/E than QCOM (lower growth, higher payout).
+          </div>
+
+          <p style="margin-top:16px"><strong>Earnings Yield</strong> is simply the inverse of P/E:</p>
+          <div class="formula-block">
+            \[ \text{Earnings Yield} = \frac{\text{EPS}}{P} = \frac{1}{\text{P/E}} \]
+          </div>
+          <div class="var-def">
+            QCOM's earnings yield = \( 1/23.56 \approx 4.24\% \). This can be compared directly to bond yields to gauge relative attractiveness of stocks versus bonds.
+          </div>
+
+          <p style="margin-top:16px"><strong>EV/EBITDA</strong> is preferred by many analysts because:</p>
+          <div class="formula-block">
+            \[ \frac{\text{EV}}{\text{EBITDA}} = \frac{\text{Market Cap} + \text{Debt} - \text{Cash}}{\text{EBIT} + \text{D\&A}} \]
+          </div>
+          <div class="var-def">
+            It accounts for differences in capital structure (debt levels), tax regimes, and depreciation policies across companies. EBITDA approximates <em>pre-tax, pre-financing operating cash flow</em>, making it useful for cross-company comparisons regardless of how each company is financed.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Example: Comparison Table -->
     <div class="table-card">
       <div class="col-header-row">
         <span>Metric</span>
@@ -835,19 +1282,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content">The <strong>Price-to-Earnings ratio</strong> measures how much investors pay for <span class="kw">each dollar of current earnings</span>. It is the most widely used valuation metric in equity analysis.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">P/E = <strong>Share Price</strong> / <strong>Earnings Per Share</strong> <span style="color:var(--text-dim)">(or Market Cap / Net Income)</span></div></div>
+          <div class="lp-content">The <strong>Price-to-Earnings ratio</strong> = \( P / \text{EPS} \) or equivalently \( \text{Market Cap} / \text{Net Income} \). It measures how much investors pay for <span class="kw">each dollar of current earnings</span>.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Lower P/E</span> suggests cheaper valuation relative to earnings. <span class="kw">High P/E</span> can mean overvaluation <em>or</em> that investors expect strong future growth. <span class="kw-red">Negative earnings</span> make P/E misleading &mdash; it should not be used as a standalone metric for unprofitable companies.</div>
+          <div class="lp-content"><span class="kw-green">Lower P/E</span> suggests cheaper valuation relative to earnings. <span class="kw">High P/E</span> can mean overvaluation <em>or</em> that investors expect strong future growth. <span class="kw-red">Negative earnings</span> make P/E misleading.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>23.56&times;</strong> is cheapest &mdash; reasonably valued for a tech leader. <span class="tag-amd">AMD</span> at <strong>151.73&times;</strong> reflects massive growth expectations. <span class="tag-intc">INTC</span> at <strong>904.17&times;</strong> is distorted by near-zero earnings and is <span class="kw-red">not meaningful</span> as a valuation tool.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>23.56&times;</strong> is reasonably valued for a tech leader. <span class="tag-amd">AMD</span> at <strong>151.73&times;</strong> reflects massive growth expectations. <span class="tag-intc">INTC</span> at <strong>904.17&times;</strong> is distorted by near-zero earnings and is <span class="kw-red">not meaningful</span> as a valuation tool.</div></div>
         </div>
       </div>
 
@@ -862,15 +1305,11 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Forward P/E</strong> uses <span class="kw">analyst estimates</span> of next year&rsquo;s earnings instead of trailing earnings. It provides a <em>forward-looking</em> valuation perspective.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Forward P/E = <strong>Share Price</strong> / <strong>Estimated Future EPS</strong></div></div>
+          <div class="lp-content"><strong>Forward P/E</strong> = \( P / \text{EPS}_{\text{est}} \). It uses <span class="kw">analyst estimates</span> of next year's earnings, providing a <em>forward-looking</em> valuation perspective.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">A <span class="kw-green">lower Forward P/E</span> vs. trailing P/E suggests analysts expect <strong>earnings growth</strong>. The larger the gap, the more growth is anticipated.</div>
+          <div class="lp-content">A <span class="kw-green">lower Forward P/E</span> vs. trailing P/E suggests analysts expect <strong>earnings growth</strong>. The larger the gap between trailing and forward P/E, the more growth is anticipated.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
@@ -889,19 +1328,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content">The <strong>Price-to-Sales ratio</strong> compares <span class="kw">market cap to total revenue</span>. It is especially useful when a company has no earnings, making P/E meaningless.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">P/S = <strong>Market Cap</strong> / <strong>Revenue</strong></div></div>
+          <div class="lp-content">The <strong>Price-to-Sales ratio</strong> = \( \text{Market Cap} / \text{Revenue} \). Especially useful when a company has no earnings, making P/E meaningless.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Lower P/S</span> means you pay less per dollar of revenue. But it <span class="kw-red">ignores profitability</span> &mdash; a company with 50% margins <em>deserves</em> a higher P/S than one with 5% margins.</div>
+          <div class="lp-content"><span class="kw-green">Lower P/S</span> means you pay less per dollar of revenue. But P/S <span class="kw-red">ignores profitability</span>&mdash;a company with 50% margins <em>deserves</em> a higher P/S than one with 5% margins.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>5.34&times;</strong> is cheapest per dollar of revenue. <span class="tag-amd">AMD</span> at <strong>19.96&times;</strong> is most expensive &mdash; investors pay ~$20 for every $1 of AMD revenue, pricing in rapid growth and margin expansion.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>5.34&times;</strong> is cheapest per dollar of revenue. <span class="tag-amd">AMD</span> at <strong>19.96&times;</strong> is most expensive&mdash;investors pay ~$20 for every $1 of AMD revenue, pricing in rapid growth and margin expansion.</div></div>
         </div>
       </div>
 
@@ -916,19 +1351,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content">The <strong>Price-to-Book ratio</strong> compares <span class="kw">market value to book value</span> (net assets on the balance sheet). It measures how much investors pay <em>over</em> the company's accounting value.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">P/B = <strong>Market Cap</strong> / <strong>Book Value of Equity</strong> <span style="color:var(--text-dim)">(Total Assets &minus; Total Liabilities)</span></div></div>
+          <div class="lp-content">The <strong>Price-to-Book ratio</strong> = \( \text{Market Cap} / \text{Book Value of Equity} \), where book value = total assets &minus; total liabilities. It measures how much investors pay <em>over</em> the company's accounting net asset value.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Lower P/B</span> can indicate undervaluation. A P/B near <strong>1.0</strong> means the stock trades near asset value. Tech companies typically have <span class="kw">high P/B</span> because their value lies in IP and intangibles, not physical assets.</div>
+          <div class="lp-content"><span class="kw-green">Lower P/B</span> can indicate undervaluation. P/B near <strong>1.0</strong> means the stock trades near asset value. Tech companies typically have <span class="kw">high P/B</span> because their value lies in IP and intangibles.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> at <strong>5.64&times;</strong> is cheapest, reflecting its large physical asset base (fabs). <span class="tag-amd">AMD</span> at <strong>11.51&times;</strong> is highest, partly due to goodwill from the Xilinx acquisition inflating intangible assets.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> at <strong>5.64&times;</strong> is cheapest, reflecting its large physical asset base. <span class="tag-amd">AMD</span> at <strong>11.51&times;</strong> is highest, partly due to goodwill from the Xilinx acquisition inflating intangible assets.</div></div>
         </div>
       </div>
 
@@ -943,19 +1374,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>EV/EBITDA</strong> compares <span class="kw">total company value</span> (including debt) to earnings before interest, taxes, depreciation, and amortization. It is <em>preferred by analysts</em> over P/E for comparing companies with different capital structures.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">EV/EBITDA = (<strong>Market Cap</strong> + <strong>Debt</strong> &minus; <strong>Cash</strong>) / <strong>EBITDA</strong></div></div>
+          <div class="lp-content"><strong>EV/EBITDA</strong> = \( \text{EV} / \text{EBITDA} \). It compares <span class="kw">total company value</span> (including debt) to earnings before interest, taxes, depreciation, and amortization. Preferred by analysts for cross-company comparisons.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Lower is cheaper</span>. Accounts for debt unlike P/E. Under <strong>10&times;</strong> is cheap, <strong>10&ndash;20&times;</strong> is fair, above <strong>20&times;</strong> is expensive for mature companies. <span class="kw">Growth companies</span> can justify higher ratios.</div>
+          <div class="lp-content"><span class="kw-green">Lower is cheaper</span>. Under <strong>10&times;</strong> is cheap, <strong>10&ndash;20&times;</strong> is fair, above <strong>20&times;</strong> is expensive for mature companies. <span class="kw">Growth companies</span> can justify higher ratios.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>16.94&times;</strong> is most attractively valued. <span class="tag-intc">INTC</span> at <strong>56.05&times;</strong> is expensive (depressed EBITDA). <span class="tag-amd">AMD</span> at <strong>90.74&times;</strong> is very expensive &mdash; pricing in substantial future EBITDA growth.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>16.94&times;</strong> is most attractively valued. <span class="tag-intc">INTC</span> at <strong>56.05&times;</strong> is expensive (depressed EBITDA). <span class="tag-amd">AMD</span> at <strong>90.74&times;</strong> is very expensive&mdash;pricing in substantial future EBITDA growth.</div></div>
         </div>
       </div>
 
@@ -970,34 +1397,94 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content">The <strong>Price-to-Free-Cash-Flow ratio</strong> measures how much investors pay for <span class="kw">each dollar of FCF</span> generated. Many analysts consider this <em>more reliable</em> than P/E because <span class="kw">cash flow is harder to manipulate</span> than accounting earnings.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">P/FCF = <strong>Market Cap</strong> / <strong>Free Cash Flow</strong></div></div>
+          <div class="lp-content"><strong>Price-to-Free-Cash-Flow</strong> = \( \text{Market Cap} / \text{FCF} \). Many analysts consider this <em>more reliable</em> than P/E because <span class="kw">cash flow is harder to manipulate</span> than accounting earnings.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Lower P/FCF</span> means cheaper valuation per dollar of actual cash generated. <span class="kw-red">Negative FCF</span> makes this ratio meaningless. Generally under <strong>20&times;</strong> is considered attractive.</div>
+          <div class="lp-content"><span class="kw-green">Lower P/FCF</span> means cheaper valuation per dollar of cash generated. Under <strong>20&times;</strong> is considered attractive. <span class="kw-red">Negative FCF</span> makes this ratio meaningless.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
           <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> at <strong>15.17&times;</strong> appears cheapest but its FCF is <span class="kw-red">negative</span> (&minus;$3.12B), so this ratio uses |FCF| and is <strong>misleading</strong>. <span class="tag-qcom">QCOM</span> at <strong>18.99&times;</strong> is genuinely attractive. <span class="tag-amd">AMD</span> at <strong>87.17&times;</strong> is expensive relative to cash generation.</div></div>
         </div>
       </div>
-
     </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Lecture</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm" target="_blank" rel="noopener">Damodaran &mdash; Sessions 14&ndash;18: Relative Valuation</a> <span class="rm-desc">&mdash; Complete coverage of PE, PB, PS, and EV multiples with worked examples.</span></li>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">PE, PB, PS, and EV Multiples by Industry</a> <span class="rm-desc">&mdash; Current multiples for every sector, useful for benchmarking.</span></li>
+          <li><span class="rm-type">Book</span>Damodaran, <em>Investment Valuation</em>, 3rd ed. <span class="rm-desc">&mdash; Chapters 17&ndash;20 provide the definitive treatment of multiples-based valuation.</span></li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ═══════════ SECTION E: RETURNS & DIVIDENDS ═══════════ -->
+<!-- =========================================================================
+     SECTION V: CAPITAL EFFICIENCY & RETURNS
+     ========================================================================= -->
 <div class="section" id="sec-e">
   <div class="section-header" onclick="toggleSection('sec-e')">
     <div class="accent-bar" style="background:linear-gradient(180deg,#8b7fcf,var(--intc))"></div>
-    <h2>Returns &amp; Dividends</h2>
+    <h2>V. Capital Efficiency &amp; Returns</h2>
     <span class="caret">&#9662;</span>
   </div>
   <div class="section-body">
+
+    <!-- Theory Block -->
+    <div class="theory-block">
+      <p>Profitability tells you how much money a company <em>makes</em>. Return metrics tell you how efficiently it <span class="kw">deploys capital</span> to generate that profit. A company earning $1B looks impressive until you realize it required $100B in assets to do so (1% return). Return metrics normalize profit by the capital base, answering: <em>for each dollar of capital entrusted to management, how many cents of profit were generated?</em></p>
+
+      <p>This distinction is economically fundamental. A company creates value only when its return on capital <span class="kw">exceeds its cost of capital</span>. If a firm earns 6% on its invested capital but its investors demand 10%, the company is <span class="kw-red">destroying shareholder value</span> with every dollar it reinvests.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>Return on Assets (ROA)</strong> measures how efficiently all assets generate profit:</p>
+          <div class="formula-block">
+            \[ \text{ROA} = \frac{\text{Net Income}}{\text{Total Assets}} \times 100\% \]
+          </div>
+          <div class="var-def">
+            Asset-heavy companies (like Intel with fabs) naturally have lower ROA. Compare within the same business model: fabless vs. IDM (integrated device manufacturer) companies are structurally different.
+          </div>
+
+          <p style="margin-top:16px"><strong>Return on Invested Capital (ROIC)</strong> is more precise&mdash;it measures the return on capital that was <em>deliberately invested</em> in the business:</p>
+          <div class="formula-block">
+            \[ \text{ROIC} = \frac{\text{NOPAT}}{\text{Invested Capital}} = \frac{\text{EBIT} \times (1-t)}{\text{Equity} + \text{Debt} - \text{Cash}} \]
+          </div>
+          <div class="var-def">
+            where \( \text{NOPAT} \) = Net Operating Profit After Tax = \( \text{EBIT} \times (1 - t) \), and \( t \) is the effective tax rate. ROIC uses after-tax operating income (before interest expense) divided by all invested capital, making it independent of capital structure.
+          </div>
+
+          <p style="margin-top:16px"><strong>The Value Creation Test:</strong> A company creates economic value if and only if:</p>
+          <div class="formula-block">
+            \[ \text{ROIC} > \text{WACC} \]
+          </div>
+          <div class="var-def">
+            The spread \( (\text{ROIC} - \text{WACC}) \) multiplied by invested capital gives <strong>Economic Value Added (EVA)</strong>, a measure of dollar-value creation: \( \text{EVA} = (\text{ROIC} - \text{WACC}) \times \text{Invested Capital} \).
+          </div>
+
+          <p style="margin-top:16px"><strong>Dividend Yield</strong> measures the cash income return from holding a stock:</p>
+          <div class="formula-block">
+            \[ \text{Dividend Yield} = \frac{\text{Annual Dividends Per Share}}{\text{Share Price}} \times 100\% \]
+          </div>
+          <div class="var-def">
+            Total shareholder return combines dividend yield with capital gains: \( \text{TSR} = \text{Dividend Yield} + \text{Capital Gain Yield} \). A company paying no dividend (like AMD) must deliver all returns through price appreciation.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied Example: Comparison Table -->
     <div class="table-card">
       <div class="col-header-row">
         <span>Metric</span>
@@ -1018,19 +1505,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Return on Assets</strong> measures how efficiently a company uses its <span class="kw">total assets</span> to generate profit. It answers: <em>how many dollars of profit does each dollar of assets produce?</em></div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">ROA = <strong>Net Income</strong> / <strong>Total Assets</strong> &times; 100</div></div>
+          <div class="lp-content"><strong>Return on Assets</strong> = \( \text{Net Income} / \text{Total Assets} \). It measures how efficiently a company uses its <span class="kw">total assets</span> to generate profit.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content"><span class="kw-green">Higher ROA</span> means more efficient asset utilization. <strong>Asset-heavy</strong> companies (like INTC with fabs) naturally have lower ROA. Always compare within the same industry and business model.</div>
+          <div class="lp-content"><span class="kw-green">Higher ROA</span> means more efficient asset utilization. <strong>Asset-heavy</strong> companies naturally have lower ROA. Always compare within the same industry and business model.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">17.64%</span> &mdash; exceptional asset efficiency. <span class="tag-amd">AMD</span> at 5.93% is solid. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;1.60%</span> is negative because it is unprofitable, and its massive fab assets drag the ratio further down.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">17.64%</span>&mdash;exceptional asset efficiency. <span class="tag-amd">AMD</span> at 5.93% is solid. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;1.60%</span> is negative because it is unprofitable, and its massive fab assets drag the ratio further down.</div></div>
         </div>
       </div>
 
@@ -1045,19 +1528,15 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Return on Capital</strong> measures how effectively a company generates profits from its <span class="kw">invested capital</span> (equity + debt). It indicates management&rsquo;s skill at deploying capital productively.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Return on Capital = <strong>EBIT</strong> / (<strong>Total Equity</strong> + <strong>Total Debt</strong>) &times; 100</div></div>
+          <div class="lp-content"><strong>Return on Capital</strong> = \( \text{EBIT} / (\text{Equity} + \text{Debt}) \). It measures how effectively a company generates profits from its <span class="kw">total invested capital</span>.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
-          <div class="lp-content">Above <strong>15%</strong> is <span class="kw-green">excellent</span>. Below the <span class="kw">cost of capital</span> (~8&ndash;10%) means the company is <span class="kw-red">destroying value</span> &mdash; its investments generate less return than the cost of funding them.</div>
+          <div class="lp-content">Above <strong>15%</strong> is <span class="kw-green">excellent</span>. Below the <span class="kw">cost of capital</span> (~8&ndash;10%) means the company is <span class="kw-red">destroying value</span>&mdash;its investments generate less return than the cost of funding them.</div>
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <span class="kw-green">23.63%</span> is outstanding &mdash; well above cost of capital. <span class="tag-amd">AMD</span> at 6.70% is below typical cost of capital, suggesting it hasn't fully realized returns on its Xilinx investment. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;2.09%</span> is destroying capital.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <span class="kw-green">23.63%</span> is outstanding&mdash;well above cost of capital. <span class="tag-amd">AMD</span> at 6.70% is below typical cost of capital, suggesting it hasn't fully realized returns on its Xilinx investment. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;2.09%</span> is destroying capital.</div></div>
         </div>
       </div>
 
@@ -1072,11 +1551,7 @@ strong{color:var(--text);font-weight:700}
       <div class="learning-panel">
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
-          <div class="lp-content"><strong>Dividend yield</strong> is the <span class="kw">annual dividend payment</span> as a percentage of the current share price. It represents the cash return to shareholders from dividends alone, <em>excluding</em> price appreciation.</div>
-        </div>
-        <div class="lp-section">
-          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
-          <div class="lp-content"><div class="formula-block">Dividend Yield = <strong>Annual Dividends Per Share</strong> / <strong>Share Price</strong> &times; 100</div></div>
+          <div class="lp-content"><strong>Dividend yield</strong> = \( \text{Annual DPS} / P \). The <span class="kw">annual dividend payment</span> as a percentage of the current share price&mdash;the cash return from dividends alone.</div>
         </div>
         <div class="lp-section">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
@@ -1084,78 +1559,478 @@ strong{color:var(--text);font-weight:700}
         </div>
         <div class="lp-section collapsed">
           <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
-          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> leads at <strong>2.24%</strong> &mdash; historically a reliable dividend payer, though <span class="kw-red">sustainability is questionable</span> with negative FCF. <span class="tag-qcom">QCOM</span> yields 1.68%, well-covered by strong FCF. <span class="tag-amd">AMD</span> pays no dividend, reinvesting in R&amp;D and growth.</div></div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> leads at <strong>2.24%</strong>&mdash;historically a reliable dividend payer, though <span class="kw-red">sustainability is questionable</span> with negative FCF. <span class="tag-qcom">QCOM</span> yields 1.68%, well-covered by strong FCF. <span class="tag-amd">AMD</span> pays no dividend, reinvesting in R&amp;D and growth.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Lecture</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm" target="_blank" rel="noopener">Damodaran &mdash; ROIC and ROE: The Valuation Numbers That Matter</a> <span class="rm-desc">&mdash; Why return on capital is the single most important metric in valuation.</span></li>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">EVA and Return on Capital by Industry</a> <span class="rm-desc">&mdash; Excess returns, ROIC minus cost of capital, and EVA by sector.</span></li>
+          <li><span class="rm-type">Course</span><a href="https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/" target="_blank" rel="noopener">MIT 15.401 &mdash; Capital Budgeting</a> <span class="rm-desc">&mdash; Prof. Andrew Lo on investment returns, NPV, and the cost of capital.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================================
+     SECTION VI: DuPont ANALYSIS
+     ========================================================================= -->
+<div class="section" id="sec-f">
+  <div class="section-header" onclick="toggleSection('sec-f')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,var(--gold),var(--green))"></div>
+    <h2>VI. DuPont Analysis</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+
+    <div class="theory-block">
+      <p>The <span class="kw">DuPont decomposition</span>&mdash;developed by the DuPont Corporation in the 1920s&mdash;is one of the most elegant tools in financial analysis. It answers a deceptively simple question: <em>why</em> does one company earn a higher return on equity than another? Rather than treating ROE as a single opaque number, DuPont breaks it into its <strong>component drivers</strong>, revealing whether a company's returns come from profitability, efficiency, or leverage.</p>
+
+      <p>This decomposition is not just an accounting identity&mdash;it is a <span class="kw">diagnostic framework</span>. By isolating the three levers management can pull, it identifies where a company excels and where it is weak.</p>
+
+      <div class="math-section">
+        <div class="math-toggle" onclick="this.closest('.math-section').classList.toggle('collapsed')">
+          <span class="m-caret">&#9662;</span> Mathematical Framework
+        </div>
+        <div class="math-content">
+          <p><strong>Return on Equity (ROE)</strong> is the foundational metric:</p>
+          <div class="formula-block">
+            \[ \text{ROE} = \frac{\text{Net Income}}{\text{Shareholders' Equity}} \]
+          </div>
+
+          <p style="margin-top:16px"><strong>3-Factor DuPont Decomposition:</strong> We can decompose ROE by strategically multiplying by 1 (in the form of Revenue/Revenue and Assets/Assets):</p>
+          <div class="formula-block">
+            \[ \text{ROE} = \underbrace{\frac{\text{Net Income}}{\text{Revenue}}}_{\text{Profit Margin}} \times \underbrace{\frac{\text{Revenue}}{\text{Total Assets}}}_{\text{Asset Turnover}} \times \underbrace{\frac{\text{Total Assets}}{\text{Equity}}}_{\text{Equity Multiplier}} \]
+          </div>
+          <div class="var-def">
+            <strong>Derivation.</strong> Start with ROE = Net Income / Equity. Multiply by \( \frac{\text{Revenue}}{\text{Revenue}} \times \frac{\text{Assets}}{\text{Assets}} = 1 \):<br><br>
+            \( \displaystyle \text{ROE} = \frac{\text{NI}}{\text{Equity}} \times \frac{\text{Rev}}{\text{Rev}} \times \frac{\text{Assets}}{\text{Assets}} = \frac{\text{NI}}{\text{Rev}} \times \frac{\text{Rev}}{\text{Assets}} \times \frac{\text{Assets}}{\text{Equity}} \)
+          </div>
+
+          <p style="margin-top:16px">Each factor captures a distinct strategic dimension:</p>
+          <div class="var-def">
+            <strong>1. Profit Margin</strong> = Net Income / Revenue &mdash; <em>How much profit per dollar of sales?</em> Reflects pricing power, cost control, and operational efficiency.<br><br>
+            <strong>2. Asset Turnover</strong> = Revenue / Total Assets &mdash; <em>How efficiently are assets deployed to generate sales?</em> Capital-light businesses (fabless semiconductors) have high turnover.<br><br>
+            <strong>3. Equity Multiplier</strong> = Total Assets / Equity &mdash; <em>How much leverage is used?</em> Higher multiplier = more debt. A multiplier of 2.0 means 50% of assets are debt-financed.
+          </div>
+
+          <p style="margin-top:20px"><strong>5-Factor DuPont Decomposition:</strong> For deeper analysis, the profit margin can be further decomposed into tax burden and interest burden components:</p>
+          <div class="formula-block">
+            \[ \text{ROE} = \underbrace{\frac{\text{NI}}{\text{EBT}}}_{\text{Tax Burden}} \times \underbrace{\frac{\text{EBT}}{\text{EBIT}}}_{\text{Interest Burden}} \times \underbrace{\frac{\text{EBIT}}{\text{Rev}}}_{\text{Operating Margin}} \times \underbrace{\frac{\text{Rev}}{\text{Assets}}}_{\text{Turnover}} \times \underbrace{\frac{\text{Assets}}{\text{Equity}}}_{\text{Leverage}} \]
+          </div>
+          <div class="var-def">
+            where EBT = Earnings Before Tax. The tax burden ratio \( (1 - t_{\text{eff}}) \) measures the fraction of pre-tax profit retained after taxes. The interest burden ratio measures how much operating profit survives after interest payments.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applied DuPont Example -->
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>DuPont Factor</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <div class="metric-row" data-section="sec-f">
+        <span class="metric-name">Net Profit Margin</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-5.90%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>12.51%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>22.31%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="DuPont: Profit Margin">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> DuPont Insight</div>
+          <div class="lp-content"><div class="insight"><span class="kw">Profit Margin</span> is the first lever. <span class="tag-qcom">QCOM</span>&rsquo;s 22.31% margin is the primary driver of its superior ROE&mdash;it converts more of each revenue dollar into bottom-line profit, thanks to high-margin IP licensing (QTL). <span class="tag-intc">INTC</span>&rsquo;s negative margin means this lever is pulling ROE <em>downward</em>.</div></div>
         </div>
       </div>
 
+      <div class="metric-row" data-section="sec-f">
+        <span class="metric-name">Asset Turnover</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>0.27&times;</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>0.47&times;</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>0.79&times;</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="DuPont: Asset Turnover">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> DuPont Insight</div>
+          <div class="lp-content"><div class="insight"><span class="kw">Asset Turnover</span> is the second lever. <span class="tag-intc">INTC</span>&rsquo;s 0.27&times; is strikingly low&mdash;its $200B+ asset base (dominated by fabrication plants) generates only $0.27 of revenue per dollar of assets. <span class="tag-qcom">QCOM</span>&rsquo;s capital-light model yields 0.79&times;, generating nearly 3&times; more revenue per asset dollar than Intel.</div></div>
+        </div>
+      </div>
+
+      <div class="metric-row" data-section="sec-f">
+        <span class="metric-name">Equity Multiplier</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>1.93&times;</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>1.85&times;</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>3.40&times;</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="DuPont: Equity Multiplier">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> DuPont Insight</div>
+          <div class="lp-content"><div class="insight"><span class="kw">Equity Multiplier</span> is the third lever. <span class="tag-qcom">QCOM</span>&rsquo;s 3.40&times; is highest&mdash;it uses significantly more leverage (debt) than peers. But because its operating returns are so strong, this leverage amplifies ROE rather than creating distress. <span class="tag-intc">INTC</span> and <span class="tag-amd">AMD</span> use moderate leverage (~1.9&times;).</div></div>
+        </div>
+      </div>
+
+      <div class="metric-row" data-section="sec-f" style="background:var(--gold-bg)">
+        <span class="metric-name" style="color:var(--gold)">= ROE (Product)</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-3.07%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>10.89%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>59.96%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="DuPont: ROE">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> DuPont Insight</div>
+          <div class="lp-content"><div class="insight">The product of all three factors yields ROE. <span class="tag-qcom">QCOM</span>&rsquo;s extraordinary <span class="kw-green">~60% ROE</span> results from <em>all three levers working together</em>: strong margins (22.31%) &times; efficient asset use (0.79&times;) &times; aggressive but sustainable leverage (3.40&times;). <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">negative ROE</span> (-3.07%) shows that even moderate leverage cannot save a company with negative profit margins. <span class="tag-amd">AMD</span> at ~11% is solid but has room to grow as margins improve.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Read More -->
+    <div class="read-more collapsed">
+      <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+        <span class="rm-caret">&#9662;</span> Further Reading
+      </div>
+      <div class="read-more-body">
+        <ul>
+          <li><span class="rm-type">Data</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">ROE Decomposition by Industry</a> <span class="rm-desc">&mdash; Damodaran's dataset breaking ROE into its DuPont components for every sector.</span></li>
+          <li><span class="rm-type">Book</span>Bodie, Kane &amp; Marcus, <em>Investments</em>, 12th ed. <span class="rm-desc">&mdash; Chapter 19 covers the DuPont system in detail with worked examples.</span></li>
+          <li><span class="rm-type">Course</span><a href="https://www.coursera.org/learn/financial-markets-global" target="_blank" rel="noopener">Financial Markets (Yale)</a> <span class="rm-desc">&mdash; Robert Shiller covers return analysis and corporate financial structure.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================================
+     SECTION VII: DISCOUNTED CASH FLOW (DCF)
+     ========================================================================= -->
+<div class="dcf-module" id="dcf-module">
+  <h2>Discounted Cash Flow (DCF)</h2>
+  <div class="dcf-subtitle">Valuing a Company by Its Future Cash &mdash; From First Principles</div>
+
+  <!-- 1. Time Value of Money -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> The Time Value of Money</h3>
+    <p>The entire edifice of DCF rests on a single axiom: <span class="kw">a dollar today is worth more than a dollar tomorrow</span>. This is not merely a statement about inflation&mdash;it reflects the fundamental economic fact that money received today can be invested to generate returns. This concept, called the <em>time value of money</em>, is the bedrock of all modern finance.</p>
+    <p>If you can earn a return \( r \) per period, then a cash flow \( C \) received \( t \) periods from now has a <strong>present value</strong> of:</p>
+    <div class="dcf-formula">
+      \[ PV = \frac{C}{(1 + r)^t} \]
+    </div>
+    <p>The factor \( \frac{1}{(1+r)^t} \) is the <em>discount factor</em>&mdash;it shrinks future cash flows to reflect the opportunity cost of waiting. Conversely, the <strong>future value</strong> of \( C \) invested today for \( t \) periods is:</p>
+    <div class="dcf-formula">
+      \[ FV = C \times (1 + r)^t \]
+    </div>
+  </div>
+
+  <!-- 2. The DCF Framework -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> The DCF Framework</h3>
+    <p>A DCF valuation estimates a company's <span class="kw">intrinsic value</span> by projecting its future free cash flows and discounting them to the present. The total value is the sum of two components: the <strong>explicit forecast period</strong> (typically 5&ndash;10 years) and the <strong>terminal value</strong> (the value of all cash flows beyond the forecast horizon).</p>
+    <div class="dcf-formula">
+      \[ V_0 = \underbrace{\sum_{t=1}^{n} \frac{FCF_t}{(1+r)^t}}_{\text{Present value of forecast period}} + \underbrace{\frac{TV_n}{(1+r)^n}}_{\text{Present value of terminal value}} \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin-top:8px">
+      where \( FCF_t \) = free cash flow in year \( t \), \( r \) = discount rate (typically WACC), \( n \) = number of projection years, and \( TV_n \) = terminal value at the end of year \( n \).
+    </div>
+  </div>
+
+  <!-- 3. Cost of Equity: CAPM -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Cost of Equity: The CAPM</h3>
+    <p>The <strong>Capital Asset Pricing Model</strong> (Sharpe, 1964; Lintner, 1965) provides a systematic way to estimate the return that equity investors require&mdash;the <span class="kw">cost of equity</span> \( r_e \). The key insight is that investors are only compensated for <em>systematic risk</em> (market risk that cannot be diversified away), measured by <strong>beta</strong> (\( \beta \)).</p>
+    <div class="dcf-formula">
+      \[ r_e = r_f + \beta \cdot (r_m - r_f) \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin-top:8px">
+      <strong>Derivation sketch:</strong> In equilibrium, CAPM says the expected return on any asset \( i \) must compensate for:<br>
+      &bull; \( r_f \) = the <strong>risk-free rate</strong> (typically the 10-year Treasury yield, ~4.2% currently)<br>
+      &bull; \( \beta_i \) = the asset's <strong>sensitivity to market movements</strong>, defined as \( \beta_i = \frac{\text{Cov}(R_i, R_m)}{\text{Var}(R_m)} \)<br>
+      &bull; \( (r_m - r_f) \) = the <strong>equity risk premium</strong> (ERP)&mdash;the excess return investors demand for bearing market risk (~5&ndash;6% historically)
+    </div>
+    <p style="margin-top:14px">For a semiconductor company like QCOM with \( \beta \approx 1.2 \):</p>
+    <div class="dcf-formula">
+      \[ r_e = 4.2\% + 1.2 \times 5.5\% = 4.2\% + 6.6\% = 10.8\% \]
+    </div>
+    <div class="dcf-callout amber">
+      <strong>Note on CAPM limitations:</strong> While widely used, CAPM has known shortcomings. Fama &amp; French (1993) showed that size and value factors also explain returns beyond beta alone. The model assumes investors hold perfectly diversified portfolios&mdash;in practice, many do not. Despite these criticisms, CAPM remains the standard starting point for estimating cost of equity in industry practice.
+    </div>
+  </div>
+
+  <!-- 4. Cost of Debt -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Cost of Debt</h3>
+    <p>The <strong>cost of debt</strong> \( r_d \) is the interest rate a company pays on its borrowings. Because interest expense is tax-deductible, the <span class="kw">after-tax cost of debt</span> is lower than the stated rate:</p>
+    <div class="dcf-formula">
+      \[ r_d^{\text{after-tax}} = r_d \times (1 - t) \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin-top:8px">
+      where \( t \) is the marginal corporate tax rate. This <em>tax shield</em> is one reason companies use debt financing&mdash;it effectively subsidizes borrowing. If QCOM borrows at 4.5% and faces a 21% tax rate: \( r_d^{\text{after-tax}} = 4.5\% \times (1 - 0.21) = 3.56\% \).
+    </div>
+  </div>
+
+  <!-- 5. WACC Derivation -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Weighted Average Cost of Capital (WACC)</h3>
+    <p>WACC blends the cost of equity and the after-tax cost of debt, <span class="kw">weighted by their proportion</span> of the company's total capital structure. It represents the overall rate of return that the company must earn on its investments to satisfy all capital providers.</p>
+    <div class="dcf-formula">
+      \[ \text{WACC} = \frac{E}{V} \cdot r_e + \frac{D}{V} \cdot r_d \cdot (1 - t) \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin-top:8px">
+      where:<br>
+      &bull; \( E \) = market value of equity, \( D \) = market value of debt, \( V = E + D \)<br>
+      &bull; \( r_e \) = cost of equity (from CAPM), \( r_d \) = cost of debt<br>
+      &bull; \( t \) = corporate tax rate
+    </div>
+    <p style="margin-top:14px"><strong>Worked example for QCOM:</strong></p>
+    <div class="dcf-formula">
+      \[ \text{WACC} = \frac{210.88}{210.88 + 15.60} \times 10.8\% + \frac{15.60}{226.48} \times 4.5\% \times (1 - 0.21) \]
+    </div>
+    <div class="dcf-formula">
+      \[ = 0.931 \times 10.8\% + 0.069 \times 3.56\% = 10.05\% + 0.25\% \approx 10.3\% \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin-top:8px">
+      QCOM's capital structure is heavily equity-weighted, so WACC is close to the cost of equity. We round to <strong>10%</strong> for the DCF example below.
+    </div>
+  </div>
+
+  <!-- 6. Terminal Value: Gordon Growth Model -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Terminal Value: The Gordon Growth Model</h3>
+    <p>Since we cannot project cash flows forever, we compute a <span class="kw">terminal value</span> at the end of the forecast period. The most common approach assumes cash flows grow at a constant rate \( g \) in perpetuity. This is the <strong>Gordon Growth Model</strong> (Gordon &amp; Shapiro, 1956).</p>
+    <p><strong>Derivation from a geometric series:</strong></p>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin:8px 0">
+      The terminal value at time \( n \) is the sum of all future discounted cash flows growing at rate \( g \):
+    </div>
+    <div class="dcf-formula">
+      \[ TV_n = \sum_{k=1}^{\infty} \frac{FCF_n \cdot (1+g)^k}{(1+r)^k} = FCF_n \cdot (1+g) \sum_{k=0}^{\infty} \left(\frac{1+g}{1+r}\right)^k \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin:8px 0">
+      This is an infinite geometric series with ratio \( \frac{1+g}{1+r} \). Since \( g < r \), the ratio is less than 1 and the series converges:
+    </div>
+    <div class="dcf-formula">
+      \[ \sum_{k=0}^{\infty} x^k = \frac{1}{1-x} \quad \text{for } |x| < 1 \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin:8px 0">
+      Substituting \( x = \frac{1+g}{1+r} \):
+    </div>
+    <div class="dcf-formula">
+      \[ TV_n = FCF_n \cdot (1+g) \cdot \frac{1}{1 - \frac{1+g}{1+r}} = FCF_n \cdot (1+g) \cdot \frac{1+r}{r-g} \]
+    </div>
+    <div style="font-size:0.85rem;color:var(--text-sec);line-height:1.8;margin:8px 0">
+      Which simplifies to the standard form (since the \( (1+r) \) cancels when we discount back):
+    </div>
+    <div class="dcf-formula">
+      \[ \boxed{TV_n = \frac{FCF_n \cdot (1+g)}{r - g}} \]
+    </div>
+    <div class="dcf-callout amber">
+      <strong>Critical constraint:</strong> \( g \) must be less than \( r \); otherwise the series diverges. The terminal growth rate should not exceed the long-term GDP growth rate (~2&ndash;3%), since no company can grow faster than the economy indefinitely.
+    </div>
+  </div>
+
+  <!-- 7. Worked Example: QCOM -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Worked Example: QCOM DCF Valuation</h3>
+    <p style="margin-bottom:12px"><strong>Assumptions:</strong> Starting FCF = <span class="kw">$12.50B</span> | Growth rate = <span class="kw">8%</span> (years 1&ndash;5) | WACC = <span class="kw">10%</span> | Terminal growth = <span class="kw">3%</span></p>
+    <table class="dcf-table">
+      <thead>
+        <tr><th>Year \( t \)</th><th>\( FCF_t \)</th><th>Discount Factor \( \frac{1}{(1.10)^t} \)</th><th>\( PV(FCF_t) \)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>$13.50B</td><td>0.9091</td><td>$12.27B</td></tr>
+        <tr><td>2</td><td>$14.58B</td><td>0.8264</td><td>$12.05B</td></tr>
+        <tr><td>3</td><td>$15.75B</td><td>0.7513</td><td>$11.83B</td></tr>
+        <tr><td>4</td><td>$17.01B</td><td>0.6830</td><td>$11.62B</td></tr>
+        <tr><td>5</td><td>$18.37B</td><td>0.6209</td><td>$11.41B</td></tr>
+      </tbody>
+    </table>
+    <div class="dcf-result">
+      <div class="line"><span class="label">Sum of PV of forecast FCFs</span><span>$59.18B</span></div>
+      <div class="line"><span class="label">Terminal Value at year 5</span><span>\( \frac{18.37 \times 1.03}{0.10 - 0.03} = \$270.26\text{B} \)</span></div>
+      <div class="line"><span class="label">PV of Terminal Value</span><span>\( 270.26 \times 0.6209 = \$167.82\text{B} \)</span></div>
+      <div class="line total"><span>Intrinsic Value Estimate</span><span>$227.00B</span></div>
+    </div>
+    <div class="dcf-callout green">
+      <strong>Current Market Cap:</strong> $210.88B<br>
+      <strong>Implied:</strong> QCOM may be slightly <span class="kw-green">undervalued</span> (~7.6% upside). Terminal value accounts for <strong>73.9%</strong> of total value \( (167.82 / 227.00) \)&mdash;a reminder of how heavily DCF depends on terminal assumptions.
+    </div>
+  </div>
+
+  <!-- 8. Sensitivity Analysis -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Sensitivity Analysis</h3>
+    <p>DCF outputs are <span class="kw">highly sensitive</span> to input assumptions. The table below shows QCOM's implied intrinsic value (in $B) across a range of WACC and terminal growth rate assumptions:</p>
+    <table class="sensitivity-table">
+      <thead>
+        <tr>
+          <th class="corner"></th>
+          <th colspan="5">Terminal Growth Rate \( g \)</th>
+        </tr>
+        <tr>
+          <th>WACC \( \downarrow \)</th>
+          <th>2.0%</th>
+          <th>2.5%</th>
+          <th>3.0%</th>
+          <th>3.5%</th>
+          <th>4.0%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>8%</strong></td><td>$316</td><td>$347</td><td>$385</td><td>$432</td><td>$492</td></tr>
+        <tr><td><strong>9%</strong></td><td>$253</td><td>$273</td><td>$297</td><td>$326</td><td>$362</td></tr>
+        <tr><td><strong>10%</strong></td><td>$208</td><td>$222</td><td class="highlight">$227</td><td>$257</td><td>$280</td></tr>
+        <tr><td><strong>11%</strong></td><td>$175</td><td>$185</td><td>$197</td><td>$210</td><td>$227</td></tr>
+        <tr><td><strong>12%</strong></td><td>$150</td><td>$157</td><td>$166</td><td>$176</td><td>$188</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:0.82rem;color:var(--text-dim);margin-top:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+      Highlighted cell shows our base case ($227B at 10% WACC, 3% terminal growth). Moving WACC from 10% to 8% nearly doubles the implied value&mdash;a 200 basis point change in discount rate produces a ~70% change in valuation. This fragility is inherent to DCF.
+    </div>
+  </div>
+
+  <!-- 9. Counter-Example: INTC -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Counter-Example: Why DCF Fails for INTC</h3>
+    <div class="dcf-callout red">
+      INTC's FCF is <span class="kw-red">&minus;$3.12B</span>. You cannot project <strong>negative FCF</strong> forward in a standard DCF and get a meaningful valuation. DCF requires <span class="kw">positive, predictable cash flows</span>. For turnaround stories like Intel, analysts must estimate <em>when</em> FCF turns positive and use <strong>scenario analysis</strong>&mdash;building multiple DCF models under different assumptions (optimistic, base, pessimistic) and probability-weighting the outcomes.
+    </div>
+  </div>
+
+  <!-- 10. Key Limitations -->
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Key Limitations</h3>
+    <ul>
+      <li><span class="kw-red">Highly sensitive to assumptions</span>&mdash;as the sensitivity table shows, small changes in WACC or growth rate dramatically change the result</li>
+      <li><strong>Garbage in, garbage out</strong>&mdash;projections are educated guesses. Aswath Damodaran notes: <em>&ldquo;A DCF valuation is only as good as the story that underlies it&rdquo;</em></li>
+      <li><span class="kw">Terminal value often accounts for 60&ndash;80%</span> of total value, making the most uncertain component also the most influential</li>
+      <li>Works best for <span class="kw-green">mature, stable cash-flow-generating businesses</span> (like QCOM). Less useful for high-growth (AMD) or turnaround (INTC) companies</li>
+      <li>CAPM's beta is estimated from <em>historical</em> data, which may not predict future risk. Fama &amp; French (1992, 1993) showed additional risk factors beyond market beta</li>
+      <li>The perpetuity assumption in terminal value implies the company exists forever&mdash;a strong assumption for any individual firm</li>
+    </ul>
+  </div>
+
+  <!-- DCF Read More -->
+  <div class="read-more collapsed" style="margin-top:20px">
+    <div class="read-more-toggle" onclick="this.closest('.read-more').classList.toggle('collapsed')">
+      <span class="rm-caret">&#9662;</span> Further Reading
+    </div>
+    <div class="read-more-body">
+      <ul>
+        <li><span class="rm-type">Course</span><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm" target="_blank" rel="noopener">Damodaran's Valuation Course (25 Sessions)</a> <span class="rm-desc">&mdash; Complete online course covering every aspect of DCF, from risk-free rates to terminal value. Sessions 2&ndash;9 are directly relevant.</span></li>
+        <li><span class="rm-type">Video</span><a href="https://www.youtube.com/@AswathDamodaranonValuation" target="_blank" rel="noopener">Damodaran on YouTube</a> <span class="rm-desc">&mdash; Hundreds of lectures on valuation, corporate finance, and investment philosophy.</span></li>
+        <li><span class="rm-type">Lecture</span><a href="https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/" target="_blank" rel="noopener">MIT 15.401 &mdash; Present Value Relations &amp; CAPM</a> <span class="rm-desc">&mdash; Prof. Andrew Lo's rigorous treatment of present value, risk, and the CAPM.</span></li>
+        <li><span class="rm-type">Book</span>Damodaran, <em>Investment Valuation: Tools and Techniques</em>, 3rd ed. <span class="rm-desc">&mdash; The definitive textbook on DCF and relative valuation. Chapters 2&ndash;12 cover everything in this section.</span></li>
+        <li><span class="rm-type">Book</span>Brealey, Myers &amp; Allen, <em>Principles of Corporate Finance</em>, 14th ed. <span class="rm-desc">&mdash; Chapters 4&ndash;9 cover present value, cost of capital, and CAPM with formal derivations.</span></li>
+      </ul>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ SECTION F: DCF MODULE ═══════════ -->
-<div class="dcf-module" id="dcf-module">
-  <h2>Discounted Cash Flow (DCF)</h2>
-  <div class="dcf-subtitle">Valuing a Company by Its Future Cash</div>
+<!-- =========================================================================
+     GLOSSARY
+     ========================================================================= -->
+<div class="glossary" id="glossary">
+  <h2>Glossary of Terms</h2>
+  <div class="glossary-subtitle">Quick reference for financial terms used throughout this page</div>
+  <div class="glossary-grid">
+    <div class="glossary-item"><span class="gl-term">Beta (&beta;)</span><span class="gl-def">A stock's sensitivity to market movements. &beta; = 1 means it moves with the market; &beta; > 1 means more volatile.</span></div>
+    <div class="glossary-item"><span class="gl-term">Book Value</span><span class="gl-def">Total assets minus total liabilities. The accounting (net asset) value of shareholders' equity.</span></div>
+    <div class="glossary-item"><span class="gl-term">CAGR</span><span class="gl-def">Compound Annual Growth Rate. The smoothed annualized return over multiple periods.</span></div>
+    <div class="glossary-item"><span class="gl-term">CAPM</span><span class="gl-def">Capital Asset Pricing Model. Relates expected return to systematic risk via beta. <a href="#dcf-module">See VII</a>.</span></div>
+    <div class="glossary-item"><span class="gl-term">CapEx</span><span class="gl-def">Capital Expenditure. Cash spent on physical assets (property, plant, equipment).</span></div>
+    <div class="glossary-item"><span class="gl-term">COGS</span><span class="gl-def">Cost of Goods Sold. Direct costs of producing goods or services (materials, manufacturing, labor).</span></div>
+    <div class="glossary-item"><span class="gl-term">DCF</span><span class="gl-def">Discounted Cash Flow. Valuation method based on projecting and discounting future free cash flows. <a href="#dcf-module">See VII</a>.</span></div>
+    <div class="glossary-item"><span class="gl-term">D&amp;A</span><span class="gl-def">Depreciation &amp; Amortization. Non-cash charges that allocate asset costs over their useful life.</span></div>
+    <div class="glossary-item"><span class="gl-term">DuPont</span><span class="gl-def">A decomposition of ROE into profit margin, asset turnover, and leverage. <a href="#sec-f">See VI</a>.</span></div>
+    <div class="glossary-item"><span class="gl-term">EBIT</span><span class="gl-def">Earnings Before Interest and Taxes. Same as operating income. Measures core profitability.</span></div>
+    <div class="glossary-item"><span class="gl-term">EBITDA</span><span class="gl-def">EBIT plus depreciation and amortization. Approximates pre-tax operating cash flow.</span></div>
+    <div class="glossary-item"><span class="gl-term">EPS</span><span class="gl-def">Earnings Per Share. Net income divided by shares outstanding.</span></div>
+    <div class="glossary-item"><span class="gl-term">ERP</span><span class="gl-def">Equity Risk Premium. The extra return investors demand for stocks over risk-free bonds (~5&ndash;6%).</span></div>
+    <div class="glossary-item"><span class="gl-term">EV</span><span class="gl-def">Enterprise Value. Market cap + debt &minus; cash. Total value of the firm to all capital providers.</span></div>
+    <div class="glossary-item"><span class="gl-term">EVA</span><span class="gl-def">Economic Value Added. (ROIC &minus; WACC) &times; Invested Capital. Dollar measure of value creation.</span></div>
+    <div class="glossary-item"><span class="gl-term">Fabless</span><span class="gl-def">A semiconductor company that designs chips but outsources manufacturing (e.g., AMD, QCOM use TSMC).</span></div>
+    <div class="glossary-item"><span class="gl-term">FCF</span><span class="gl-def">Free Cash Flow. Operating cash flow minus capital expenditures. Cash available for shareholders.</span></div>
+    <div class="glossary-item"><span class="gl-term">IDM</span><span class="gl-def">Integrated Device Manufacturer. A company that both designs and fabricates chips (e.g., Intel).</span></div>
+    <div class="glossary-item"><span class="gl-term">Market Cap</span><span class="gl-def">Share price &times; shares outstanding. The total market value of a company's equity.</span></div>
+    <div class="glossary-item"><span class="gl-term">NOPAT</span><span class="gl-def">Net Operating Profit After Tax. EBIT &times; (1 &minus; tax rate). Used in ROIC calculation.</span></div>
+    <div class="glossary-item"><span class="gl-term">OCF</span><span class="gl-def">Operating Cash Flow. Cash generated from core business operations, before CapEx.</span></div>
+    <div class="glossary-item"><span class="gl-term">P/E</span><span class="gl-def">Price-to-Earnings ratio. Share price divided by EPS. The most common valuation multiple.</span></div>
+    <div class="glossary-item"><span class="gl-term">P/B</span><span class="gl-def">Price-to-Book ratio. Market cap divided by book value of equity.</span></div>
+    <div class="glossary-item"><span class="gl-term">P/S</span><span class="gl-def">Price-to-Sales ratio. Market cap divided by revenue.</span></div>
+    <div class="glossary-item"><span class="gl-term">ROA</span><span class="gl-def">Return on Assets. Net income / total assets. Measures asset utilization efficiency.</span></div>
+    <div class="glossary-item"><span class="gl-term">ROE</span><span class="gl-def">Return on Equity. Net income / shareholders' equity. Key metric in DuPont analysis.</span></div>
+    <div class="glossary-item"><span class="gl-term">ROIC</span><span class="gl-def">Return on Invested Capital. NOPAT / invested capital. Measures capital efficiency. <a href="#sec-e">See V</a>.</span></div>
+    <div class="glossary-item"><span class="gl-term">SBC</span><span class="gl-def">Stock-Based Compensation. Non-cash expense recognized when employees receive equity awards.</span></div>
+    <div class="glossary-item"><span class="gl-term">SG&amp;A</span><span class="gl-def">Selling, General &amp; Administrative expenses. Overhead costs not directly tied to production.</span></div>
+    <div class="glossary-item"><span class="gl-term">TTM</span><span class="gl-def">Trailing Twelve Months. Financial data summing the most recent four quarters.</span></div>
+    <div class="glossary-item"><span class="gl-term">WACC</span><span class="gl-def">Weighted Average Cost of Capital. Blended cost of debt and equity. Used as DCF discount rate. <a href="#dcf-module">See VII</a>.</span></div>
+  </div>
+</div>
 
-  <div class="dcf-section">
-    <h3><span class="dcf-icon">&#9670;</span> What is DCF?</h3>
-    <p>DCF estimates a company's <span class="kw">intrinsic value</span> by projecting its future free cash flows and <strong>discounting</strong> them back to today's dollars. The core idea: a dollar earned in the future is worth <em>less</em> than a dollar today, because of the <span class="kw">time value of money</span>.</p>
+<!-- =========================================================================
+     RESOURCES & FURTHER READING
+     ========================================================================= -->
+<div class="resources" id="resources">
+  <h2>Resources &amp; Further Reading</h2>
+  <div class="resources-subtitle">Courses, lectures, data, and textbooks for deeper study</div>
+
+  <div class="resource-category">
+    <h3>Free Online Courses</h3>
+    <ul class="resource-list">
+      <li><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm" target="_blank" rel="noopener">Valuation (NYU Stern)</a> &mdash; <span class="res-author">Aswath Damodaran.</span> 25 webcasts covering intrinsic and relative valuation from first principles. Includes slides, post-class tests, and solutions. Pairs with <em>Investment Valuation</em> textbook.</li>
+      <li><a href="https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/" target="_blank" rel="noopener">Finance Theory I (MIT OCW 15.401)</a> &mdash; <span class="res-author">Prof. Andrew Lo.</span> Graduate-level course covering present value, CAPM, portfolio theory, and efficient markets. Full video lectures, problem sets, and exams freely available.</li>
+      <li><a href="https://www.coursera.org/learn/financial-markets-global" target="_blank" rel="noopener">Financial Markets (Coursera / Yale)</a> &mdash; <span class="res-author">Prof. Robert Shiller (Nobel Laureate).</span> Accessible introduction to financial markets, behavioral finance, and risk management. 7 modules covering insurance, CAPM, bonds, stocks, options, and banking.</li>
+    </ul>
   </div>
 
-  <div class="dcf-section">
-    <h3><span class="dcf-icon">&#9670;</span> The Formula</h3>
-    <div class="dcf-formula">
-      Intrinsic Value = &Sigma; [ <strong>FCF</strong><sub>t</sub> / (1 + <strong>r</strong>)<sup>t</sup> ] + <strong>Terminal Value</strong> / (1 + <strong>r</strong>)<sup>n</sup><br><br>
-      <span style="color:var(--text-dim)">Where:</span><br>
-      &nbsp;&nbsp;<strong>FCF</strong><sub>t</sub> = Free Cash Flow in year t<br>
-      &nbsp;&nbsp;<strong>r</strong> = Discount rate (typically WACC, ~8&ndash;12%)<br>
-      &nbsp;&nbsp;<strong>n</strong> = Projection period (typically 5&ndash;10 years)<br>
-      &nbsp;&nbsp;<strong>Terminal Value</strong> = FCF<sub>n</sub> &times; (1 + g) / (r &minus; g), where <strong>g</strong> = long-term growth rate
-    </div>
+  <div class="resource-category">
+    <h3>Data Resources</h3>
+    <ul class="resource-list">
+      <li><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html" target="_blank" rel="noopener">Damodaran's Data Sets</a> &mdash; Comprehensive industry-level data on margins, multiples, betas, cost of capital, growth rates, and returns. Updated annually. Covers US, Europe, Japan, emerging markets, and global aggregates.</li>
+      <li><a href="https://pages.stern.nyu.edu/~adamodar/" target="_blank" rel="noopener">Damodaran Online</a> &mdash; Homepage for all of Aswath Damodaran's teaching materials, papers, blog posts, and valuation spreadsheets.</li>
+    </ul>
   </div>
 
-  <div class="dcf-section">
-    <h3><span class="dcf-icon">&#9670;</span> Walk-Through: QCOM DCF Example</h3>
-    <p style="margin-bottom:12px">Starting FCF: <span class="kw">$12.50B</span> &nbsp;|&nbsp; Growth Rate: <span class="kw">8%</span> &nbsp;|&nbsp; Discount Rate (WACC): <span class="kw">10%</span> &nbsp;|&nbsp; Terminal Growth: <span class="kw">3%</span></p>
-    <table class="dcf-table">
-      <thead>
-        <tr><th>Year</th><th>Projected FCF</th><th>Discount Factor</th><th>Present Value</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>1</td><td>$13.50B</td><td>0.909</td><td>$12.27B</td></tr>
-        <tr><td>2</td><td>$14.58B</td><td>0.826</td><td>$12.04B</td></tr>
-        <tr><td>3</td><td>$15.75B</td><td>0.751</td><td>$11.83B</td></tr>
-        <tr><td>4</td><td>$17.01B</td><td>0.683</td><td>$11.62B</td></tr>
-        <tr><td>5</td><td>$18.37B</td><td>0.621</td><td>$11.41B</td></tr>
-      </tbody>
-    </table>
-    <div class="dcf-result">
-      <div class="line"><span class="label">Sum of PV of FCFs</span><span>$59.17B</span></div>
-      <div class="line"><span class="label">Terminal Value</span><span>$18.37B &times; 1.03 / (0.10 &minus; 0.03) = $270.31B</span></div>
-      <div class="line"><span class="label">PV of Terminal Value</span><span>$270.31B &times; 0.621 = $167.86B</span></div>
-      <div class="line total"><span>Intrinsic Value Estimate</span><span>$227.03B</span></div>
-    </div>
-    <div class="dcf-callout green">
-      <strong>Current Market Cap:</strong> $210.88B<br>
-      <strong>Implied:</strong> QCOM may be slightly <span class="kw-green">undervalued</span> (~7.7% upside)
-    </div>
+  <div class="resource-category">
+    <h3>Video Lectures</h3>
+    <ul class="resource-list">
+      <li><a href="https://www.youtube.com/@AswathDamodaranonValuation" target="_blank" rel="noopener">Aswath Damodaran on YouTube</a> &mdash; Hundreds of lectures on valuation, corporate finance, and investment philosophy. Semester-length courses recorded live at NYU Stern.</li>
+      <li><a href="https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/" target="_blank" rel="noopener">MIT 15.401 Video Lectures</a> &mdash; 12 lectures by Prof. Andrew Lo covering present value, equities, CAPM, portfolio theory, and efficient markets.</li>
+    </ul>
   </div>
 
-  <div class="dcf-section">
-    <h3><span class="dcf-icon">&#9670;</span> Counter-Example: Why DCF Fails for INTC</h3>
-    <div class="dcf-callout red">
-      INTC's FCF is <span class="kw-red">&minus;$3.12B</span>. You cannot project <strong>negative FCF</strong> forward and get a meaningful valuation. DCF requires <span class="kw">positive, predictable cash flows</span>. For turnaround stories like Intel, analysts must estimate <em>when</em> FCF turns positive and use <strong>scenario analysis</strong> instead.
-    </div>
+  <div class="resource-category">
+    <h3>Textbooks</h3>
+    <ul class="resource-list">
+      <li>Damodaran, Aswath. <em>Investment Valuation: Tools and Techniques for Determining the Value of Any Asset</em>, 3rd ed. Wiley, 2012. &mdash; The definitive reference for DCF and relative valuation.</li>
+      <li>Brealey, Richard A., Stewart C. Myers, and Franklin Allen. <em>Principles of Corporate Finance</em>, 14th ed. McGraw-Hill, 2022. &mdash; The standard MBA textbook covering present value, capital budgeting, cost of capital, and corporate financial policy.</li>
+      <li>Bodie, Zvi, Alex Kane, and Alan J. Marcus. <em>Investments</em>, 12th ed. McGraw-Hill, 2021. &mdash; Comprehensive treatment of portfolio theory, CAPM, factor models, and the DuPont framework.</li>
+    </ul>
   </div>
 
-  <div class="dcf-section">
-    <h3><span class="dcf-icon">&#9670;</span> Key Limitations</h3>
-    <ul>
-      <li><span class="kw-red">Highly sensitive to assumptions</span> &mdash; small changes in growth rate or WACC dramatically change the result</li>
-      <li><strong>Garbage in, garbage out</strong> &mdash; projections are educated guesses at best</li>
-      <li><span class="kw">Terminal value often accounts for 60&ndash;80%</span> of total value, making it the most uncertain component</li>
-      <li>Works best for <span class="kw-green">mature, stable cash-flow-generating businesses</span> (like QCOM)</li>
-      <li>Less useful for <strong>high-growth</strong> (AMD) or <strong>turnaround</strong> (INTC) companies</li>
+  <div class="resource-category">
+    <h3>Foundational Academic Papers</h3>
+    <ul class="resource-list">
+      <li>Sharpe, William F. &ldquo;Capital Asset Prices: A Theory of Market Equilibrium Under Conditions of Risk.&rdquo; <em>The Journal of Finance</em>, 19(3), 1964, pp. 425&ndash;442. &mdash; The original CAPM paper.</li>
+      <li>Fama, Eugene F. and Kenneth R. French. &ldquo;The Cross-Section of Expected Stock Returns.&rdquo; <em>The Journal of Finance</em>, 47(2), 1992, pp. 427&ndash;465. &mdash; Showed that size and value factors explain returns beyond beta.</li>
+      <li>Gordon, Myron J. and Eli Shapiro. &ldquo;Capital Equipment Analysis: The Required Rate of Profit.&rdquo; <em>Management Science</em>, 3(1), 1956, pp. 102&ndash;110. &mdash; Introduced the dividend discount model (Gordon Growth Model).</li>
+      <li>Modigliani, Franco and Merton H. Miller. &ldquo;The Cost of Capital, Corporation Finance and the Theory of Investment.&rdquo; <em>The American Economic Review</em>, 48(3), 1958, pp. 261&ndash;297. &mdash; The foundational paper on capital structure irrelevance (M&amp;M Theorem).</li>
     </ul>
   </div>
 </div>
@@ -1167,12 +2042,12 @@ strong{color:var(--text);font-weight:700}
 </footer>
 
 <script>
-/* ── Theme Toggle ── */
+/* -- Theme Toggle -- */
 function switchTheme() {
-  const html = document.documentElement;
-  const checkbox = document.getElementById('themeToggle');
-  const label = document.getElementById('themeLabel');
-  const newTheme = checkbox.checked ? 'dark' : 'light';
+  var html = document.documentElement;
+  var checkbox = document.getElementById('themeToggle');
+  var label = document.getElementById('themeLabel');
+  var newTheme = checkbox.checked ? 'dark' : 'light';
   html.setAttribute('data-theme', newTheme);
   label.textContent = newTheme === 'dark' ? 'Light mode' : 'Dark mode';
   try { localStorage.setItem('theme', newTheme); } catch(e) {}
@@ -1181,7 +2056,7 @@ function switchTheme() {
 /* Restore saved theme */
 (function() {
   try {
-    const saved = localStorage.getItem('theme');
+    var saved = localStorage.getItem('theme');
     if (saved === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
       document.getElementById('themeToggle').checked = true;
@@ -1190,12 +2065,12 @@ function switchTheme() {
   } catch(e) {}
 })();
 
-/* ── Section Collapse/Expand ── */
+/* -- Section Collapse/Expand -- */
 function toggleSection(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-/* ── Learning Panel Toggle ── */
+/* -- Learning Panel Toggle -- */
 function toggleInfo(btn) {
   var metricRow = btn.closest('.metric-row');
   var panel = metricRow.nextElementSibling;
@@ -1217,21 +2092,27 @@ function toggleInfo(btn) {
   if (!isOpen) {
     panel.classList.add('open');
     btn.classList.add('active');
+    // Re-typeset MathJax in the newly opened panel
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([panel]).catch(function(){});
+    }
   }
 }
 
-/* ── Learning Panel Sub-section Toggle ── */
+/* -- Learning Panel Sub-section Toggle -- */
 function toggleLpSection(toggle) {
   toggle.closest('.lp-section').classList.toggle('collapsed');
 }
 
-/* ── Expand All / Collapse All ── */
+/* -- Expand All / Collapse All -- */
 var allExpanded = false;
 function toggleAllPanels() {
   allExpanded = !allExpanded;
   var panels = document.querySelectorAll('.learning-panel');
   var btns = document.querySelectorAll('.btn-info');
   var toggleBtn = document.getElementById('toggleAll');
+  var mathSections = document.querySelectorAll('.math-section');
+  var readMores = document.querySelectorAll('.read-more');
 
   for (var i = 0; i < panels.length; i++) {
     if (allExpanded) { panels[i].classList.add('open'); }
@@ -1242,6 +2123,18 @@ function toggleAllPanels() {
     else { btns[j].classList.remove('active'); }
   }
 
+  // Expand/collapse math sections
+  for (var m = 0; m < mathSections.length; m++) {
+    if (allExpanded) { mathSections[m].classList.remove('collapsed'); }
+    else { mathSections[m].classList.add('collapsed'); }
+  }
+
+  // Expand/collapse read more sections
+  for (var rm = 0; rm < readMores.length; rm++) {
+    if (allExpanded) { readMores[rm].classList.remove('collapsed'); }
+    else { readMores[rm].classList.add('collapsed'); }
+  }
+
   // Expand sections too
   var sections = document.querySelectorAll('.section');
   for (var k = 0; k < sections.length; k++) {
@@ -1249,7 +2142,33 @@ function toggleAllPanels() {
   }
 
   toggleBtn.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+
+  // Re-typeset all MathJax when expanding
+  if (allExpanded && window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise().catch(function(){});
+  }
 }
+
+/* -- Smooth scroll for TOC links -- */
+document.addEventListener('DOMContentLoaded', function() {
+  var tocLinks = document.querySelectorAll('.toc-body a');
+  for (var i = 0; i < tocLinks.length; i++) {
+    tocLinks[i].addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      if (href && href.charAt(0) === '#') {
+        var target = document.getElementById(href.substring(1));
+        if (target) {
+          e.preventDefault();
+          // Ensure section is expanded
+          if (target.classList.contains('collapsed')) {
+            target.classList.remove('collapsed');
+          }
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  }
+});
 </script>
 </body>
 </html>
