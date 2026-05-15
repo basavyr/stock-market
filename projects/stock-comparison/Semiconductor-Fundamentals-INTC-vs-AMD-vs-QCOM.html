@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semiconductor Fundamentals — INTC vs AMD vs QCOM</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ═══════════════════════════════════════════════
+   THEME VARIABLES — Light & Dark
+   ═══════════════════════════════════════════════ */
+[data-theme="light"]{
+  --bg:       #fafafa;
+  --bg-alt:   #f3f4f6;
+  --card:     #ffffff;
+  --card-alt: #f7f8fa;
+  --border:   #e5e7eb;
+  --border-lt:#f0f0f0;
+  --text:     #1f2937;
+  --text-sec: #4b5563;
+  --text-dim: #9ca3af;
+  --hover:    #f9fafb;
+  --shadow:   0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg:0 4px 12px rgba(0,0,0,0.06);
+
+  /* Company — muted tones */
+  --intc:     #3b7dd8;
+  --amd:      #c9444d;
+  --qcom:     #4f63b8;
+
+  /* Accents */
+  --gold:     #b8860b;
+  --gold-bg:  rgba(184,134,11,0.08);
+  --green:    #2d8659;
+  --green-bg: #f0faf5;
+  --red:      #c53030;
+  --red-bg:   #fdf2f2;
+  --amber-bg: #fef9ee;
+  --formula:  #5c4b1a;
+  --formula-bg:#faf6ed;
+  --insight-bg:#f5f7fc;
+  --panel-bg: #fdfdfe;
+  --header-bg:#f0f2f5;
+
+  --toggle-bg:   #e5e7eb;
+  --toggle-knob: #ffffff;
+  --toggle-icon: #f59e0b;
+}
+
+[data-theme="dark"]{
+  --bg:       #111318;
+  --bg-alt:   #161922;
+  --card:     #1c1f2a;
+  --card-alt: #212532;
+  --border:   #2e3243;
+  --border-lt:#252838;
+  --text:     #d4d7e0;
+  --text-sec: #9ba1b0;
+  --text-dim: #6b7185;
+  --hover:    #22263a;
+  --shadow:   0 1px 3px rgba(0,0,0,0.2);
+  --shadow-lg:0 4px 12px rgba(0,0,0,0.3);
+
+  --intc:     #6ea8e6;
+  --amd:      #e87c83;
+  --qcom:     #8696d6;
+
+  --gold:     #d4a34a;
+  --gold-bg:  rgba(212,163,74,0.1);
+  --green:    #5cb88a;
+  --green-bg: rgba(92,184,138,0.08);
+  --red:      #e87c7c;
+  --red-bg:   rgba(232,124,124,0.08);
+  --amber-bg: rgba(212,163,74,0.08);
+  --formula:  #d4a34a;
+  --formula-bg:rgba(212,163,74,0.06);
+  --insight-bg:rgba(75,85,140,0.08);
+  --panel-bg: #191c26;
+  --header-bg:#14161e;
+
+  --toggle-bg:   #2e3243;
+  --toggle-knob: #1c1f2a;
+  --toggle-icon: #8696d6;
+}
+
+/* ═══════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════ */
+html{scroll-behavior:smooth}
+body{
+  font-family: 'Georgia', 'Palatino Linotype', 'Book Antiqua', 'Palatino', serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  padding: 0;
+  transition: background 0.35s ease, color 0.35s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a{color:var(--qcom);text-decoration:none}
+strong{color:var(--text);font-weight:700}
+.kw{font-weight:700;color:var(--gold)}
+.kw-green{font-weight:700;color:var(--green)}
+.kw-red{font-weight:700;color:var(--red)}
+
+/* ═══════════════════════════════════════════════
+   THEME TOGGLE SWITCH
+   ═══════════════════════════════════════════════ */
+.theme-switch{
+  position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+  user-select:none;
+}
+.theme-switch input{display:none}
+.switch-track{
+  width:50px;height:26px;border-radius:13px;
+  background:var(--toggle-bg);
+  position:relative;transition:background 0.3s ease;
+}
+.switch-knob{
+  position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--toggle-knob);
+  box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  transition:transform 0.3s ease, background 0.3s ease;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+}
+[data-theme="dark"] .switch-knob{transform:translateX(24px)}
+.switch-label{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;color:var(--text-dim);letter-spacing:0.3px;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════ */
+.page-header{
+  text-align:center;padding:52px 24px 36px;
+  background:var(--header-bg);
+  border-bottom:1px solid var(--border);
+  transition:background 0.35s ease;
+}
+.page-header h1{
+  font-size:clamp(1.5rem,3.5vw,2.2rem);
+  font-weight:400;letter-spacing:0.5px;margin-bottom:8px;
+  font-style:italic;color:var(--text);
+}
+.page-header .subtitle{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:clamp(0.9rem,2.2vw,1.1rem);
+  color:var(--text-sec);margin-bottom:6px;font-weight:500;
+  letter-spacing:1.5px;text-transform:uppercase;
+}
+.page-header .subtitle .tk-intc{color:var(--intc);font-weight:700}
+.page-header .subtitle .tk-amd{color:var(--amd);font-weight:700}
+.page-header .subtitle .tk-qcom{color:var(--qcom);font-weight:700}
+.page-header .datestamp{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.78rem;color:var(--text-dim);margin-top:2px;
+}
+.header-controls{
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  margin-top:20px;flex-wrap:wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   CONTROLS
+   ═══════════════════════════════════════════════ */
+.btn-toggle{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  background:var(--card);border:1px solid var(--border);color:var(--text-sec);
+  padding:8px 20px;border-radius:6px;cursor:pointer;font-size:0.8rem;
+  transition:all 0.25s ease;letter-spacing:0.3px;
+}
+.btn-toggle:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ═══════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════ */
+.container{max-width:1060px;margin:0 auto;padding:36px 20px 60px}
+
+/* ═══════════════════════════════════════════════
+   SECTION
+   ═══════════════════════════════════════════════ */
+.section{margin-bottom:40px}
+.section-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+  cursor:pointer;user-select:none;
+}
+.section-header .accent-bar{width:3px;height:24px;border-radius:2px;flex-shrink:0;opacity:0.7}
+.section-header h2{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.95rem;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;
+  color:var(--text-sec);
+}
+.section-header .caret{
+  margin-left:auto;font-size:0.65rem;color:var(--text-dim);transition:transform 0.3s;
+}
+.section.collapsed .caret{transform:rotate(-90deg)}
+.section.collapsed .section-body{display:none}
+
+/* ═══════════════════════════════════════════════
+   TABLE CARD
+   ═══════════════════════════════════════════════ */
+.table-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;box-shadow:var(--shadow);
+  transition:background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* Column Headers */
+.col-header-row{
+  display:grid;grid-template-columns:1fr repeat(3,minmax(90px,130px)) 42px;
+  align-items:center;padding:11px 18px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;
+  color:var(--text-dim);border-bottom:1px solid var(--border);background:var(--bg-alt);
+  transition:background 0.35s ease;
+}
+
+/* Metric Row */
+.metric-row{
+  display:grid;grid-template-columns:1fr repeat(3,minmax(90px,130px)) 42px;
+  align-items:center;padding:13px 18px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.85rem;border-bottom:1px solid var(--border-lt);
+  transition:background 0.2s ease;
+}
+.metric-row:last-of-type{border-bottom:none}
+.metric-row:hover{background:var(--hover)}
+.metric-row .metric-name{font-weight:600;color:var(--text);font-size:0.84rem}
+.metric-row .val{
+  text-align:right;font-variant-numeric:tabular-nums;padding-right:6px;
+  position:relative;color:var(--text-sec);font-weight:400;
+}
+.metric-row .val.best{color:var(--gold);font-weight:700}
+.metric-row .val.best::after{content:" \2605";font-size:0.65em;vertical-align:super}
+.metric-row .val.negative{color:var(--red)}
+
+.metric-row .val .company-tag{
+  display:none;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.6rem;text-transform:uppercase;letter-spacing:0.8px;
+  opacity:0.6;margin-bottom:2px;font-weight:700;
+}
+
+.btn-info{
+  background:none;border:1px solid var(--border);color:var(--text-dim);
+  width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;justify-self:center;
+  transition:all 0.25s ease;flex-shrink:0;font-weight:600;
+}
+.btn-info:hover,.btn-info.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
+
+/* ═══════════════════════════════════════════════
+   LEARNING PANEL
+   ═══════════════════════════════════════════════ */
+.learning-panel{
+  display:none;grid-column:1/-1;background:var(--panel-bg);
+  border-top:1px solid var(--border);padding:22px 26px;
+  animation:slideDown 0.3s ease;transition:background 0.35s ease;
+}
+.learning-panel.open{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.lp-section{margin-bottom:16px}
+.lp-section:last-child{margin-bottom:0}
+.lp-toggle{
+  display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-weight:700;font-size:0.76rem;color:var(--gold);padding:5px 0;
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.lp-toggle .lp-caret{font-size:0.55rem;transition:transform 0.2s;display:inline-block;width:12px}
+.lp-section.collapsed .lp-caret{transform:rotate(-90deg)}
+.lp-section.collapsed .lp-content{display:none}
+
+.lp-content{
+  font-size:0.88rem;color:var(--text-sec);padding:8px 0 4px 20px;line-height:1.8;
+  font-family:'Georgia','Palatino Linotype',serif;
+}
+.lp-content code{
+  font-family:'SF Mono',Menlo,Consolas,monospace;
+  background:var(--bg-alt);padding:2px 7px;border-radius:4px;
+  font-size:0.8em;color:var(--text);border:1px solid var(--border-lt);
+}
+.lp-content .formula-block{
+  background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
+  padding:12px 16px;margin:10px 0;
+  font-family:'SF Mono',Menlo,Consolas,monospace;
+  font-size:0.82rem;color:var(--formula);line-height:1.6;
+}
+.lp-content .insight{
+  margin-top:10px;padding:12px 16px;background:var(--insight-bg);
+  border-left:3px solid var(--qcom);border-radius:0 8px 8px 0;
+  font-size:0.85rem;line-height:1.75;color:var(--text-sec);
+}
+.lp-content .insight .tag-intc{color:var(--intc);font-weight:700}
+.lp-content .insight .tag-amd{color:var(--amd);font-weight:700}
+.lp-content .insight .tag-qcom{color:var(--qcom);font-weight:700}
+
+/* ═══════════════════════════════════════════════
+   DCF MODULE
+   ═══════════════════════════════════════════════ */
+.dcf-module{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:36px 32px;margin-top:44px;box-shadow:var(--shadow);
+  transition:background 0.35s ease, border-color 0.35s ease;
+}
+.dcf-module h2{font-size:1.3rem;margin-bottom:4px;font-weight:400;font-style:italic}
+.dcf-module .dcf-subtitle{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--text-dim);font-size:0.82rem;margin-bottom:28px;letter-spacing:0.3px;
+}
+.dcf-section{margin-bottom:26px}
+.dcf-section:last-child{margin-bottom:0}
+.dcf-section h3{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.85rem;font-weight:700;color:var(--gold);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;letter-spacing:0.3px;text-transform:uppercase;
+}
+.dcf-section h3 .dcf-icon{font-size:0.7rem;opacity:0.6}
+.dcf-section p,.dcf-section ul,.dcf-section li{
+  font-size:0.88rem;color:var(--text-sec);line-height:1.8;
+  font-family:'Georgia','Palatino Linotype',serif;
+}
+.dcf-section ul{padding-left:22px;margin-top:6px}
+.dcf-section li{margin-bottom:6px}
+.dcf-formula{
+  background:var(--formula-bg);border:1px solid var(--border);border-radius:8px;
+  padding:18px 22px;margin:14px 0;font-family:'SF Mono',Menlo,Consolas,monospace;
+  font-size:0.82rem;color:var(--formula);line-height:2;overflow-x:auto;
+}
+.dcf-table{
+  width:100%;border-collapse:collapse;margin:14px 0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.82rem;
+}
+.dcf-table th{
+  text-align:left;padding:10px 14px;background:var(--bg-alt);color:var(--text-dim);
+  font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.6px;
+  border-bottom:1px solid var(--border);transition:background 0.35s ease;
+}
+.dcf-table td{
+  padding:10px 14px;border-bottom:1px solid var(--border-lt);
+  font-variant-numeric:tabular-nums;color:var(--text-sec);
+}
+.dcf-table tr:last-child td{border-bottom:none}
+.dcf-result{
+  background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;
+  padding:18px 22px;margin:16px 0;transition:background 0.35s ease;
+}
+.dcf-result .line{
+  display:flex;justify-content:space-between;padding:5px 0;font-size:0.85rem;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--text-sec);
+}
+.dcf-result .line.total{
+  font-weight:700;color:var(--gold);border-top:1px solid var(--border);
+  padding-top:12px;margin-top:8px;font-size:0.92rem;
+}
+.dcf-result .line .label{color:var(--text-dim)}
+.dcf-callout{
+  padding:16px 20px;border-radius:8px;margin:14px 0;font-size:0.86rem;line-height:1.75;
+  font-family:'Georgia','Palatino Linotype',serif;
+}
+.dcf-callout.green{background:var(--green-bg);border-left:3px solid var(--green);color:var(--text-sec)}
+.dcf-callout.red{background:var(--red-bg);border-left:3px solid var(--red);color:var(--text-sec)}
+.dcf-callout.amber{background:var(--amber-bg);border-left:3px solid var(--gold);color:var(--text-sec)}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════ */
+.page-footer{
+  text-align:center;padding:36px 24px 44px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:0.72rem;color:var(--text-dim);
+  border-top:1px solid var(--border);margin-top:24px;letter-spacing:0.3px;
+  transition:border-color 0.35s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+@media(max-width:700px){
+  .col-header-row,.metric-row{
+    grid-template-columns:1fr 42px;gap:4px;
+  }
+  .col-header-row .val-col{display:none}
+  .metric-row .val{
+    text-align:left;padding:0;grid-column:1;display:flex;align-items:center;gap:6px;
+  }
+  .metric-row .val .company-tag{display:inline-block}
+  .metric-row .btn-info{grid-row:1;grid-column:2;align-self:start;margin-top:2px}
+  .metric-row .metric-name{grid-column:1;grid-row:1}
+  .dcf-module{padding:22px 16px}
+  .learning-panel{padding:18px 16px}
+  .page-header h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="page-header">
+  <h1>Semiconductor Fundamentals</h1>
+  <div class="subtitle"><span class="tk-intc">INTC</span> &nbsp;vs&nbsp; <span class="tk-amd">AMD</span> &nbsp;vs&nbsp; <span class="tk-qcom">QCOM</span></div>
+  <div class="datestamp">As of May 15, 2026 &middot; Trailing Twelve Months</div>
+  <div class="header-controls">
+    <button class="btn-toggle" id="toggleAll" onclick="toggleAllPanels()">Expand All</button>
+    <label class="theme-switch">
+      <input type="checkbox" id="themeToggle" onchange="switchTheme()">
+      <div class="switch-track"><div class="switch-knob"></div></div>
+      <span class="switch-label" id="themeLabel">Dark mode</span>
+    </label>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ═══════════ SECTION A: SIZE & GROWTH ═══════════ -->
+<div class="section" id="sec-a">
+  <div class="section-header" onclick="toggleSection('sec-a')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,var(--intc),var(--amd))"></div>
+    <h2>Size &amp; Growth</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>Metric</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <!-- Market Cap -->
+      <div class="metric-row" data-section="sec-a">
+        <span class="metric-name">Market Cap</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>$582.66B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--amd)">AMD</span>$733.28B</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$210.88B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Market Cap">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Market capitalization</strong> is the <span class="kw">total market value</span> of a company's outstanding shares. It represents what the market collectively believes the <em>entire</em> company is worth at the current share price.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Market Cap = <strong>Share Price</strong> &times; <strong>Shares Outstanding</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">A larger market cap generally signals a more <span class="kw">established and stable</span> business. Companies above <strong>$200B</strong> are considered <em>mega-cap</em> and tend to be industry leaders. However, a larger market cap <span class="kw-red">does not necessarily mean better value</span> &mdash; it reflects market sentiment, not intrinsic worth.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-amd">AMD</span> leads at <strong>$733.28B</strong>, followed by <span class="tag-intc">INTC</span> at <strong>$582.66B</strong>. <span class="tag-qcom">QCOM</span> at <strong>$210.88B</strong> is notably smaller despite superior profitability &mdash; suggesting the market is pricing in AMD's growth trajectory and Intel's foundry ambitions more aggressively than QCOM's current cash generation.</div></div>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="metric-row" data-section="sec-a">
+        <span class="metric-name">Revenue</span>
+        <span class="val best"><span class="company-tag" style="color:var(--intc)">INTC</span>$53.76B</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$34.64B</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$44.49B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Revenue">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Revenue</strong> is the <span class="kw">total income</span> generated from selling goods or services <em>before</em> any expenses are deducted. It is often called the <span class="kw">&ldquo;top line&rdquo;</span> because it sits at the top of the income statement.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Revenue = <strong>Units Sold</strong> &times; <strong>Average Price</strong> <span style="color:var(--text-dim)">(simplified)</span></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher revenue indicates <span class="kw">larger business scale</span>. But revenue alone tells you <em>nothing</em> about profitability &mdash; a company can have massive revenue and still <span class="kw-red">lose money</span> if costs exceed income.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> leads with <strong>$53.76B</strong>, reflecting its diversified product lines (CPUs, foundry, networking). <span class="tag-qcom">QCOM</span> (<strong>$44.49B</strong>) follows, driven by Snapdragon and licensing. <span class="tag-amd">AMD</span> (<strong>$34.64B</strong>) is smallest but growing fastest at <span class="kw-green">+34.11% YoY</span>.</div></div>
+        </div>
+      </div>
+
+      <!-- Revenue Growth YoY -->
+      <div class="metric-row" data-section="sec-a">
+        <span class="metric-name">Revenue Growth YoY</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>+7.18%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--amd)">AMD</span>+34.11%</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--qcom)">QCOM</span>-3.46%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Revenue Growth">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Revenue Growth YoY</strong> is the <span class="kw">percentage change in revenue</span> compared to the same period one year ago. It measures how quickly a company is <em>expanding</em> (or contracting) its top line.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Revenue Growth = (<strong>Current Revenue</strong> &minus; <strong>Prior Year Revenue</strong>) / <strong>Prior Year Revenue</strong> &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Positive growth</span> indicates an expanding business. <strong>Double-digit growth</strong> is considered strong. <span class="kw-red">Negative growth</span> is a red flag unless caused by divestitures, restructuring, or strategic shifts.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-amd">AMD</span>&rsquo;s <span class="kw-green">+34.11%</span> growth is exceptional, fueled by data center GPU/CPU gains. <span class="tag-intc">INTC</span>&rsquo;s +7.18% shows modest recovery. <span class="tag-qcom">QCOM</span>&rsquo;s <span class="kw-red">&minus;3.46%</span> decline reflects smartphone market headwinds.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION B: PROFITABILITY ═══════════ -->
+<div class="section" id="sec-b">
+  <div class="section-header" onclick="toggleSection('sec-b')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,var(--qcom),var(--gold))"></div>
+    <h2>Profitability</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>Metric</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <!-- Gross Profit -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">Gross Profit</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>$19.05B</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$17.15B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$24.38B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Gross Profit">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Gross profit</strong> is <span class="kw">revenue minus the direct cost</span> of producing goods or services (<strong>COGS</strong>). It represents the profit available <em>before</em> operating expenses like R&amp;D and overhead.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Gross Profit = <strong>Revenue</strong> &minus; <strong>Cost of Goods Sold</strong> (COGS)</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher gross profit means <span class="kw">more money available</span> to cover operating expenses, fund R&amp;D, and generate bottom-line profit. Always compare alongside <strong>gross margin</strong> to understand efficiency.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads with <strong>$24.38B</strong> despite lower revenue than <span class="tag-intc">INTC</span> ($19.05B), demonstrating superior cost efficiency. <span class="tag-amd">AMD</span> generates $17.15B. QCOM extracts more gross profit from <em>each dollar</em> of revenue.</div></div>
+        </div>
+      </div>
+
+      <!-- Gross Margin -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">Gross Margin</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>35.43%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>49.52%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>54.80%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Gross Margin">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Gross margin</strong> is the <span class="kw">percentage of revenue retained</span> after subtracting direct production costs. It measures <em>production efficiency</em> and <span class="kw">pricing power</span>.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Gross Margin = (<strong>Gross Profit</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher margins indicate <span class="kw">better pricing power</span> or lower production costs. In semiconductors, <strong>fabless</strong> companies (AMD, QCOM) typically have higher margins than those running their own fabs (INTC). Above <strong>50%</strong> is considered strong.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>54.80%</strong>, <span class="tag-amd">AMD</span> at <strong>49.52%</strong>, <span class="tag-intc">INTC</span> at <strong>35.43%</strong>. Intel's lower margin reflects the <span class="kw-red">high cost</span> of owning fabrication facilities. QCOM's licensing (QTL) segment contributes very high-margin revenue.</div></div>
+        </div>
+      </div>
+
+      <!-- Operating Income -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">Operating Income</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>$1.06B</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$3.69B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$11.39B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Operating Income">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Operating income</strong> (also called <span class="kw">EBIT</span>) is the profit remaining after subtracting <strong>operating expenses</strong> (R&amp;D, SG&amp;A) from gross profit. It measures <em>core business profitability</em> before interest and taxes.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Operating Income = <strong>Gross Profit</strong> &minus; <strong>Operating Expenses</strong> (R&amp;D + SG&amp;A + Other)</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Positive operating income</span> means the core business is profitable. A company with high revenue but <span class="kw-red">low or negative</span> operating income has a <strong>cost structure problem</strong>.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> dominates at <strong>$11.39B</strong>. <span class="tag-amd">AMD</span> earns $3.69B. <span class="tag-intc">INTC</span> barely breaks even at $1.06B despite having the <em>highest</em> revenue &mdash; its massive R&amp;D ($16B+) and fab costs consume nearly all gross profit.</div></div>
+        </div>
+      </div>
+
+      <!-- Operating Margin -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">Operating Margin</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>1.96%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>10.66%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>25.61%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Operating Margin">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Operating margin</strong> expresses operating income as a <span class="kw">percentage of revenue</span>. It shows how many cents of profit a company keeps from each dollar of revenue from its <em>core operations</em>.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Operating Margin = (<strong>Operating Income</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher is better. Above <strong>20%</strong> is considered <span class="kw-green">excellent</span>. This metric strips out interest and tax effects, focusing purely on <span class="kw">operational efficiency</span>.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span>&rsquo;s <span class="kw-green">25.61%</span> is excellent and industry-leading. <span class="tag-amd">AMD</span> at 10.66% is improving as it scales. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">1.96%</span> is alarming for a company of its size &mdash; nearly all revenue is consumed by costs.</div></div>
+        </div>
+      </div>
+
+      <!-- Net Profit Margin -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">Net Profit Margin</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-5.90%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>12.51%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>22.31%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Net Profit Margin">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Net profit margin</strong> is the percentage of revenue that becomes <span class="kw">actual profit</span> after <em>all</em> expenses &mdash; operating costs, interest, and taxes. It is the ultimate <span class="kw">&ldquo;bottom line&rdquo;</span> efficiency measure.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Net Profit Margin = (<strong>Net Income</strong> / <strong>Revenue</strong>) &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Positive margin</span> means the company is profitable. Higher margin = more efficient. <span class="kw-red">Negative margin</span> means the company is <strong>losing money</strong>. Always compare within the same industry.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>22.31%</strong> &mdash; earning ~$0.22 per revenue dollar. <span class="tag-amd">AMD</span> at <strong>12.51%</strong> is solidly profitable. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;5.90%</span> means it is losing money: approximately <strong>&minus;$3.17B</strong> in net losses on $53.76B revenue.</div></div>
+        </div>
+      </div>
+
+      <!-- EPS -->
+      <div class="metric-row" data-section="sec-b">
+        <span class="metric-name">EPS (Basic)</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-$0.60</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$2.67</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$9.35</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about EPS">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Earnings Per Share</strong> is the portion of a company's profit allocated to <span class="kw">each outstanding share</span> of common stock. <em>Basic</em> EPS uses actual shares outstanding (not diluted by options or convertibles).</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">EPS = <strong>Net Income</strong> / <strong>Weighted Average Shares Outstanding</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher EPS means <span class="kw-green">more profit per share</span>. <span class="kw-red">Negative EPS</span> means the company is losing money. Compare EPS <em>growth trends</em> over time rather than just absolute values across companies.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>$9.35</strong> per share. <span class="tag-amd">AMD</span> earns $2.67. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$0.60</span> confirms it is currently unprofitable on a per-share basis. QCOM earns <strong>3.5&times;</strong> more per share than AMD.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION C: CASH FLOW ═══════════ -->
+<div class="section" id="sec-c">
+  <div class="section-header" onclick="toggleSection('sec-c')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,var(--green),var(--qcom))"></div>
+    <h2>Cash Flow</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>Metric</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <!-- Operating Cash Flow -->
+      <div class="metric-row" data-section="sec-c">
+        <span class="metric-name">Operating Cash Flow</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>$9.98B</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$7.71B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$14.29B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Operating Cash Flow">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Operating cash flow</strong> (OCF) is the <span class="kw">cash generated from core business operations</span>. Unlike net income, it excludes non-cash accounting items like depreciation and reflects <em>actual cash movement</em>.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">OCF = <strong>Net Income</strong> + <strong>Non-Cash Charges</strong> (Depreciation, Amortization) &plusmn; <strong>Changes in Working Capital</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Positive and growing</span> OCF is essential &mdash; it funds CapEx, dividends, buybacks, and debt repayment. When OCF exceeds net income, it generally indicates <span class="kw">high-quality earnings</span>.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <strong>$14.29B</strong>. <span class="tag-intc">INTC</span> generates <strong>$9.98B</strong> &mdash; positive despite a net loss, because large <em>depreciation add-backs</em> from fab assets restore cash. <span class="tag-amd">AMD</span> at $7.71B.</div></div>
+        </div>
+      </div>
+
+      <!-- Capital Expenditure -->
+      <div class="metric-row" data-section="sec-c">
+        <span class="metric-name">Capital Expenditure</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-$13.10B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--amd)">AMD</span>-$974M</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>-$1.78B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about CapEx">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Capital expenditure</strong> (CapEx) is money spent on acquiring, maintaining, or upgrading <span class="kw">physical assets</span> &mdash; factories, equipment, technology. Shown as negative because it is a <em>cash outflow</em>.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">CapEx = Purchases of <strong>Property, Plant &amp; Equipment</strong> <span style="color:var(--text-dim)">(from cash flow statement)</span></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">High CapEx can indicate <span class="kw">investment in future growth</span> but reduces free cash flow. <strong>Capital-light</strong> (fabless) businesses have lower CapEx. Compare CapEx to revenue and depreciation for context.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$13.10B</span> is massive &mdash; nearly <strong>24%</strong> of revenue goes to building and upgrading fabs. <span class="tag-amd">AMD</span> at &minus;$974M and <span class="tag-qcom">QCOM</span> at &minus;$1.78B are far lower as <strong>fabless</strong> companies outsourcing to TSMC.</div></div>
+        </div>
+      </div>
+
+      <!-- Free Cash Flow -->
+      <div class="metric-row" data-section="sec-c">
+        <span class="metric-name">Free Cash Flow</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-$3.12B</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>$6.74B</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>$12.50B</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Free Cash Flow">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Free cash flow</strong> (FCF) is the <span class="kw">cash left over</span> after a company has paid for operations <em>and</em> capital expenditures. It is the cash available for <strong>dividends, buybacks, debt reduction,</strong> or <strong>acquisitions</strong>.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">FCF = <strong>Operating Cash Flow</strong> &minus; <strong>Capital Expenditures</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Positive FCF</span> is critical for financial health and shareholder returns. <span class="kw-red">Negative FCF</span> means the company is <strong>burning cash</strong>. Consistently high FCF is one of the most important indicators of a <span class="kw">quality business</span>.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">$12.50B</span> &mdash; enormous cash generation. <span class="tag-amd">AMD</span> at $6.74B benefits from its fabless model. <span class="tag-intc">INTC</span>&rsquo;s <span class="kw-red">&minus;$3.12B</span> is deeply negative because massive CapEx ($13.10B) exceeds operating cash flow ($9.98B).</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION D: VALUATION ═══════════ -->
+<div class="section" id="sec-d">
+  <div class="section-header" onclick="toggleSection('sec-d')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,var(--gold),#c27a1a)"></div>
+    <h2>Valuation</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>Metric</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <!-- P/E Ratio -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">P/E Ratio</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>904.17</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>151.73</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>23.56</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about P/E Ratio">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content">The <strong>Price-to-Earnings ratio</strong> measures how much investors pay for <span class="kw">each dollar of current earnings</span>. It is the most widely used valuation metric in equity analysis.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">P/E = <strong>Share Price</strong> / <strong>Earnings Per Share</strong> <span style="color:var(--text-dim)">(or Market Cap / Net Income)</span></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Lower P/E</span> suggests cheaper valuation relative to earnings. <span class="kw">High P/E</span> can mean overvaluation <em>or</em> that investors expect strong future growth. <span class="kw-red">Negative earnings</span> make P/E misleading &mdash; it should not be used as a standalone metric for unprofitable companies.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>23.56&times;</strong> is cheapest &mdash; reasonably valued for a tech leader. <span class="tag-amd">AMD</span> at <strong>151.73&times;</strong> reflects massive growth expectations. <span class="tag-intc">INTC</span> at <strong>904.17&times;</strong> is distorted by near-zero earnings and is <span class="kw-red">not meaningful</span> as a valuation tool.</div></div>
+        </div>
+      </div>
+
+      <!-- Forward P/E -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">Forward P/E</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>156.25</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>64.94</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>20.58</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Forward P/E">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Forward P/E</strong> uses <span class="kw">analyst estimates</span> of next year&rsquo;s earnings instead of trailing earnings. It provides a <em>forward-looking</em> valuation perspective.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Forward P/E = <strong>Share Price</strong> / <strong>Estimated Future EPS</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">A <span class="kw-green">lower Forward P/E</span> vs. trailing P/E suggests analysts expect <strong>earnings growth</strong>. The larger the gap, the more growth is anticipated.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>20.58&times;</strong> is cheapest. <span class="tag-amd">AMD</span> drops from 151.73&times; to <strong>64.94&times;</strong>, implying analysts expect ~134% earnings growth. <span class="tag-intc">INTC</span> drops to 156.25&times;, suggesting expected profit recovery but still <span class="kw-red">very expensive</span>.</div></div>
+        </div>
+      </div>
+
+      <!-- P/S Ratio -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">P/S Ratio</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>10.96</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>19.96</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>5.34</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about P/S Ratio">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content">The <strong>Price-to-Sales ratio</strong> compares <span class="kw">market cap to total revenue</span>. It is especially useful when a company has no earnings, making P/E meaningless.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">P/S = <strong>Market Cap</strong> / <strong>Revenue</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Lower P/S</span> means you pay less per dollar of revenue. But it <span class="kw-red">ignores profitability</span> &mdash; a company with 50% margins <em>deserves</em> a higher P/S than one with 5% margins.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>5.34&times;</strong> is cheapest per dollar of revenue. <span class="tag-amd">AMD</span> at <strong>19.96&times;</strong> is most expensive &mdash; investors pay ~$20 for every $1 of AMD revenue, pricing in rapid growth and margin expansion.</div></div>
+        </div>
+      </div>
+
+      <!-- P/B Ratio -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">P/B Ratio</span>
+        <span class="val best"><span class="company-tag" style="color:var(--intc)">INTC</span>5.64</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>11.51</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>8.47</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about P/B Ratio">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content">The <strong>Price-to-Book ratio</strong> compares <span class="kw">market value to book value</span> (net assets on the balance sheet). It measures how much investors pay <em>over</em> the company's accounting value.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">P/B = <strong>Market Cap</strong> / <strong>Book Value of Equity</strong> <span style="color:var(--text-dim)">(Total Assets &minus; Total Liabilities)</span></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Lower P/B</span> can indicate undervaluation. A P/B near <strong>1.0</strong> means the stock trades near asset value. Tech companies typically have <span class="kw">high P/B</span> because their value lies in IP and intangibles, not physical assets.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> at <strong>5.64&times;</strong> is cheapest, reflecting its large physical asset base (fabs). <span class="tag-amd">AMD</span> at <strong>11.51&times;</strong> is highest, partly due to goodwill from the Xilinx acquisition inflating intangible assets.</div></div>
+        </div>
+      </div>
+
+      <!-- EV/EBITDA -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">EV/EBITDA</span>
+        <span class="val"><span class="company-tag" style="color:var(--intc)">INTC</span>56.05</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>90.74</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>16.94</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about EV/EBITDA">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>EV/EBITDA</strong> compares <span class="kw">total company value</span> (including debt) to earnings before interest, taxes, depreciation, and amortization. It is <em>preferred by analysts</em> over P/E for comparing companies with different capital structures.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">EV/EBITDA = (<strong>Market Cap</strong> + <strong>Debt</strong> &minus; <strong>Cash</strong>) / <strong>EBITDA</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Lower is cheaper</span>. Accounts for debt unlike P/E. Under <strong>10&times;</strong> is cheap, <strong>10&ndash;20&times;</strong> is fair, above <strong>20&times;</strong> is expensive for mature companies. <span class="kw">Growth companies</span> can justify higher ratios.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <strong>16.94&times;</strong> is most attractively valued. <span class="tag-intc">INTC</span> at <strong>56.05&times;</strong> is expensive (depressed EBITDA). <span class="tag-amd">AMD</span> at <strong>90.74&times;</strong> is very expensive &mdash; pricing in substantial future EBITDA growth.</div></div>
+        </div>
+      </div>
+
+      <!-- P/FCF -->
+      <div class="metric-row" data-section="sec-d">
+        <span class="metric-name">P/FCF</span>
+        <span class="val best"><span class="company-tag" style="color:var(--intc)">INTC</span>15.17</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>87.17</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>18.99</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about P/FCF">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content">The <strong>Price-to-Free-Cash-Flow ratio</strong> measures how much investors pay for <span class="kw">each dollar of FCF</span> generated. Many analysts consider this <em>more reliable</em> than P/E because <span class="kw">cash flow is harder to manipulate</span> than accounting earnings.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">P/FCF = <strong>Market Cap</strong> / <strong>Free Cash Flow</strong></div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Lower P/FCF</span> means cheaper valuation per dollar of actual cash generated. <span class="kw-red">Negative FCF</span> makes this ratio meaningless. Generally under <strong>20&times;</strong> is considered attractive.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> at <strong>15.17&times;</strong> appears cheapest but its FCF is <span class="kw-red">negative</span> (&minus;$3.12B), so this ratio uses |FCF| and is <strong>misleading</strong>. <span class="tag-qcom">QCOM</span> at <strong>18.99&times;</strong> is genuinely attractive. <span class="tag-amd">AMD</span> at <strong>87.17&times;</strong> is expensive relative to cash generation.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION E: RETURNS & DIVIDENDS ═══════════ -->
+<div class="section" id="sec-e">
+  <div class="section-header" onclick="toggleSection('sec-e')">
+    <div class="accent-bar" style="background:linear-gradient(180deg,#8b7fcf,var(--intc))"></div>
+    <h2>Returns &amp; Dividends</h2>
+    <span class="caret">&#9662;</span>
+  </div>
+  <div class="section-body">
+    <div class="table-card">
+      <div class="col-header-row">
+        <span>Metric</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--intc)">INTC</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--amd)">AMD</span>
+        <span class="val-col" style="text-align:right;padding-right:6px;color:var(--qcom)">QCOM</span>
+        <span></span>
+      </div>
+
+      <!-- ROA -->
+      <div class="metric-row" data-section="sec-e">
+        <span class="metric-name">ROA</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-1.60%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>5.93%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>17.64%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about ROA">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Return on Assets</strong> measures how efficiently a company uses its <span class="kw">total assets</span> to generate profit. It answers: <em>how many dollars of profit does each dollar of assets produce?</em></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">ROA = <strong>Net Income</strong> / <strong>Total Assets</strong> &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content"><span class="kw-green">Higher ROA</span> means more efficient asset utilization. <strong>Asset-heavy</strong> companies (like INTC with fabs) naturally have lower ROA. Always compare within the same industry and business model.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> leads at <span class="kw-green">17.64%</span> &mdash; exceptional asset efficiency. <span class="tag-amd">AMD</span> at 5.93% is solid. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;1.60%</span> is negative because it is unprofitable, and its massive fab assets drag the ratio further down.</div></div>
+        </div>
+      </div>
+
+      <!-- Return on Capital -->
+      <div class="metric-row" data-section="sec-e">
+        <span class="metric-name">Return on Capital</span>
+        <span class="val negative"><span class="company-tag" style="color:var(--intc)">INTC</span>-2.09%</span>
+        <span class="val"><span class="company-tag" style="color:var(--amd)">AMD</span>6.70%</span>
+        <span class="val best"><span class="company-tag" style="color:var(--qcom)">QCOM</span>23.63%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Return on Capital">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Return on Capital</strong> measures how effectively a company generates profits from its <span class="kw">invested capital</span> (equity + debt). It indicates management&rsquo;s skill at deploying capital productively.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Return on Capital = <strong>EBIT</strong> / (<strong>Total Equity</strong> + <strong>Total Debt</strong>) &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Above <strong>15%</strong> is <span class="kw-green">excellent</span>. Below the <span class="kw">cost of capital</span> (~8&ndash;10%) means the company is <span class="kw-red">destroying value</span> &mdash; its investments generate less return than the cost of funding them.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-qcom">QCOM</span> at <span class="kw-green">23.63%</span> is outstanding &mdash; well above cost of capital. <span class="tag-amd">AMD</span> at 6.70% is below typical cost of capital, suggesting it hasn't fully realized returns on its Xilinx investment. <span class="tag-intc">INTC</span> at <span class="kw-red">&minus;2.09%</span> is destroying capital.</div></div>
+        </div>
+      </div>
+
+      <!-- Dividend Yield -->
+      <div class="metric-row" data-section="sec-e">
+        <span class="metric-name">Dividend Yield</span>
+        <span class="val best"><span class="company-tag" style="color:var(--intc)">INTC</span>2.24%</span>
+        <span class="val" style="color:var(--text-dim)"><span class="company-tag" style="color:var(--amd)">AMD</span>&mdash;</span>
+        <span class="val"><span class="company-tag" style="color:var(--qcom)">QCOM</span>1.68%</span>
+        <button class="btn-info" onclick="toggleInfo(this)" aria-label="Learn about Dividend Yield">?</button>
+      </div>
+      <div class="learning-panel">
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> What is it?</div>
+          <div class="lp-content"><strong>Dividend yield</strong> is the <span class="kw">annual dividend payment</span> as a percentage of the current share price. It represents the cash return to shareholders from dividends alone, <em>excluding</em> price appreciation.</div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> Formula</div>
+          <div class="lp-content"><div class="formula-block">Dividend Yield = <strong>Annual Dividends Per Share</strong> / <strong>Share Price</strong> &times; 100</div></div>
+        </div>
+        <div class="lp-section">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> How to Interpret</div>
+          <div class="lp-content">Higher yield means more income per dollar invested. Very high yields (<strong>&gt;5%</strong>) can signal a <span class="kw-red">distressed company</span> about to cut its dividend. <strong>Zero yield</strong> (like AMD) means the company reinvests all profits into growth.</div>
+        </div>
+        <div class="lp-section collapsed">
+          <div class="lp-toggle" onclick="toggleLpSection(this)"><span class="lp-caret">&#9662;</span> By the Numbers</div>
+          <div class="lp-content"><div class="insight"><span class="tag-intc">INTC</span> leads at <strong>2.24%</strong> &mdash; historically a reliable dividend payer, though <span class="kw-red">sustainability is questionable</span> with negative FCF. <span class="tag-qcom">QCOM</span> yields 1.68%, well-covered by strong FCF. <span class="tag-amd">AMD</span> pays no dividend, reinvesting in R&amp;D and growth.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SECTION F: DCF MODULE ═══════════ -->
+<div class="dcf-module" id="dcf-module">
+  <h2>Discounted Cash Flow (DCF)</h2>
+  <div class="dcf-subtitle">Valuing a Company by Its Future Cash</div>
+
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> What is DCF?</h3>
+    <p>DCF estimates a company's <span class="kw">intrinsic value</span> by projecting its future free cash flows and <strong>discounting</strong> them back to today's dollars. The core idea: a dollar earned in the future is worth <em>less</em> than a dollar today, because of the <span class="kw">time value of money</span>.</p>
+  </div>
+
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> The Formula</h3>
+    <div class="dcf-formula">
+      Intrinsic Value = &Sigma; [ <strong>FCF</strong><sub>t</sub> / (1 + <strong>r</strong>)<sup>t</sup> ] + <strong>Terminal Value</strong> / (1 + <strong>r</strong>)<sup>n</sup><br><br>
+      <span style="color:var(--text-dim)">Where:</span><br>
+      &nbsp;&nbsp;<strong>FCF</strong><sub>t</sub> = Free Cash Flow in year t<br>
+      &nbsp;&nbsp;<strong>r</strong> = Discount rate (typically WACC, ~8&ndash;12%)<br>
+      &nbsp;&nbsp;<strong>n</strong> = Projection period (typically 5&ndash;10 years)<br>
+      &nbsp;&nbsp;<strong>Terminal Value</strong> = FCF<sub>n</sub> &times; (1 + g) / (r &minus; g), where <strong>g</strong> = long-term growth rate
+    </div>
+  </div>
+
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Walk-Through: QCOM DCF Example</h3>
+    <p style="margin-bottom:12px">Starting FCF: <span class="kw">$12.50B</span> &nbsp;|&nbsp; Growth Rate: <span class="kw">8%</span> &nbsp;|&nbsp; Discount Rate (WACC): <span class="kw">10%</span> &nbsp;|&nbsp; Terminal Growth: <span class="kw">3%</span></p>
+    <table class="dcf-table">
+      <thead>
+        <tr><th>Year</th><th>Projected FCF</th><th>Discount Factor</th><th>Present Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>$13.50B</td><td>0.909</td><td>$12.27B</td></tr>
+        <tr><td>2</td><td>$14.58B</td><td>0.826</td><td>$12.04B</td></tr>
+        <tr><td>3</td><td>$15.75B</td><td>0.751</td><td>$11.83B</td></tr>
+        <tr><td>4</td><td>$17.01B</td><td>0.683</td><td>$11.62B</td></tr>
+        <tr><td>5</td><td>$18.37B</td><td>0.621</td><td>$11.41B</td></tr>
+      </tbody>
+    </table>
+    <div class="dcf-result">
+      <div class="line"><span class="label">Sum of PV of FCFs</span><span>$59.17B</span></div>
+      <div class="line"><span class="label">Terminal Value</span><span>$18.37B &times; 1.03 / (0.10 &minus; 0.03) = $270.31B</span></div>
+      <div class="line"><span class="label">PV of Terminal Value</span><span>$270.31B &times; 0.621 = $167.86B</span></div>
+      <div class="line total"><span>Intrinsic Value Estimate</span><span>$227.03B</span></div>
+    </div>
+    <div class="dcf-callout green">
+      <strong>Current Market Cap:</strong> $210.88B<br>
+      <strong>Implied:</strong> QCOM may be slightly <span class="kw-green">undervalued</span> (~7.7% upside)
+    </div>
+  </div>
+
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Counter-Example: Why DCF Fails for INTC</h3>
+    <div class="dcf-callout red">
+      INTC's FCF is <span class="kw-red">&minus;$3.12B</span>. You cannot project <strong>negative FCF</strong> forward and get a meaningful valuation. DCF requires <span class="kw">positive, predictable cash flows</span>. For turnaround stories like Intel, analysts must estimate <em>when</em> FCF turns positive and use <strong>scenario analysis</strong> instead.
+    </div>
+  </div>
+
+  <div class="dcf-section">
+    <h3><span class="dcf-icon">&#9670;</span> Key Limitations</h3>
+    <ul>
+      <li><span class="kw-red">Highly sensitive to assumptions</span> &mdash; small changes in growth rate or WACC dramatically change the result</li>
+      <li><strong>Garbage in, garbage out</strong> &mdash; projections are educated guesses at best</li>
+      <li><span class="kw">Terminal value often accounts for 60&ndash;80%</span> of total value, making it the most uncertain component</li>
+      <li>Works best for <span class="kw-green">mature, stable cash-flow-generating businesses</span> (like QCOM)</li>
+      <li>Less useful for <strong>high-growth</strong> (AMD) or <strong>turnaround</strong> (INTC) companies</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer class="page-footer">
+  Data sourced from Yahoo Finance / Morningstar &middot; TTM as of May 15, 2026 &middot; For educational purposes only
+</footer>
+
+<script>
+/* ── Theme Toggle ── */
+function switchTheme() {
+  const html = document.documentElement;
+  const checkbox = document.getElementById('themeToggle');
+  const label = document.getElementById('themeLabel');
+  const newTheme = checkbox.checked ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  label.textContent = newTheme === 'dark' ? 'Light mode' : 'Dark mode';
+  try { localStorage.setItem('theme', newTheme); } catch(e) {}
+}
+
+/* Restore saved theme */
+(function() {
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('themeToggle').checked = true;
+      document.getElementById('themeLabel').textContent = 'Light mode';
+    }
+  } catch(e) {}
+})();
+
+/* ── Section Collapse/Expand ── */
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+/* ── Learning Panel Toggle ── */
+function toggleInfo(btn) {
+  var metricRow = btn.closest('.metric-row');
+  var panel = metricRow.nextElementSibling;
+  var section = metricRow.getAttribute('data-section');
+  var isOpen = panel.classList.contains('open');
+
+  // Close all panels in the same section
+  var sectionEl = document.getElementById(section);
+  if (sectionEl) {
+    var openPanels = sectionEl.querySelectorAll('.learning-panel.open');
+    for (var i = 0; i < openPanels.length; i++) {
+      openPanels[i].classList.remove('open');
+      var prevBtn = openPanels[i].previousElementSibling.querySelector('.btn-info');
+      if (prevBtn) prevBtn.classList.remove('active');
+    }
+  }
+
+  // Toggle clicked panel
+  if (!isOpen) {
+    panel.classList.add('open');
+    btn.classList.add('active');
+  }
+}
+
+/* ── Learning Panel Sub-section Toggle ── */
+function toggleLpSection(toggle) {
+  toggle.closest('.lp-section').classList.toggle('collapsed');
+}
+
+/* ── Expand All / Collapse All ── */
+var allExpanded = false;
+function toggleAllPanels() {
+  allExpanded = !allExpanded;
+  var panels = document.querySelectorAll('.learning-panel');
+  var btns = document.querySelectorAll('.btn-info');
+  var toggleBtn = document.getElementById('toggleAll');
+
+  for (var i = 0; i < panels.length; i++) {
+    if (allExpanded) { panels[i].classList.add('open'); }
+    else { panels[i].classList.remove('open'); }
+  }
+  for (var j = 0; j < btns.length; j++) {
+    if (allExpanded) { btns[j].classList.add('active'); }
+    else { btns[j].classList.remove('active'); }
+  }
+
+  // Expand sections too
+  var sections = document.querySelectorAll('.section');
+  for (var k = 0; k < sections.length; k++) {
+    if (allExpanded) { sections[k].classList.remove('collapsed'); }
+  }
+
+  toggleBtn.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+}
+</script>
+</body>
+</html>
